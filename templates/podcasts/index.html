@@ -9,13 +9,21 @@
   <p>Artist stories and interviews for the curious, plus industry talk and
   continuing education for working pros. New episodes drop here first — press
   play and listen in.</p>
+  <p class="meta" style="margin-top: 12px;">
+    Browse:
+    <a href="{{ url_for('podcasts.index') }}"{% if not active_topic %} style="font-weight: bold;"{% endif %}>All shows</a>
+    ·
+    <a href="{{ url_for('podcasts.index', topic='tattoo') }}"{% if active_topic == 'tattoo' %} style="font-weight: bold;"{% endif %}>Tattoo</a>
+    ·
+    <a href="{{ url_for('podcasts.index', topic='piercing') }}"{% if active_topic == 'piercing' %} style="font-weight: bold;"{% endif %}>Piercing</a>
+  </p>
 </section>
 
 {% if previews %}
   {% for preview in previews %}
     {% set series = preview.series %}
     <section style="margin-top: 28px;">
-      <p class="section-kicker">{{ audience_label(series.audience) }} series</p>
+      <p class="section-kicker">{{ audience_label(series.audience) }} series{% if topic_label(series.topic) %} · {{ topic_label(series.topic) }}{% endif %}</p>
       <h2 style="margin-top: 0;">
         <a href="{{ url_for('podcasts.series_detail', series_slug=series.slug) }}"
            style="text-decoration: none;">{{ series.title }}</a>

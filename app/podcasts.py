@@ -11,11 +11,11 @@ audio is served from the uploads dir (dev-local, provider path later).
 """
 from __future__ import annotations
 
-from flask import Blueprint, abort, render_template, url_for
+from flask import Blueprint, abort, render_template, request, url_for
 from sqlalchemy import case
 
 from .db import get_db
-from .models import PODCAST_AUDIENCES, PodcastEpisode, PodcastSeries
+from .models import PODCAST_AUDIENCES, PODCAST_TOPICS, PodcastEpisode, PodcastSeries
 
 podcast_bp = Blueprint("podcasts", __name__, url_prefix="/podcasts")
 
@@ -55,6 +55,11 @@ def _audience_label(audience: str) -> str:
     return "Collectors" if audience == "collectors" else "Professionals"
 
 
+def _topic_label(topic: str | None) -> str:
+    return {"tattoo": "Tattoo", "piercing": "Piercing",
+            "both": "Tattoo + Piercing"}.get(topic or "", "")
+
+
 def _audio_url(episode: PodcastEpisode) -> str | None:
     if episode.audio_file:
         return url_for("uploaded_file", filename=episode.audio_file)
@@ -82,12 +87,20 @@ def duration_filter(seconds: int | None) -> str:
 
 @podcast_bp.get("/")
 def index():
-    """All active series, collectors first, each with its latest 3 episodes."""
+    """All active series, collectors first, each with its latest 3 episodes.
+
+    ?topic=tattoo|piercing filters to shows about that craft ("both" shows
+    appear under either filter).
+    """
+    topic = request.args.get("topic", "").strip().lower() or None
+    if topic not in PODCAST_TOPICS:
+        topic = None
     db = get_db()
+    q = db.query(PodcastSeries).filter_by(is_active=True)
+    if topic:
+        q = q.filter(PodcastSeries.topic.in_([topic, "both"]))
     series = (
-        db.query(PodcastSeries)
-        .filter_by(is_active=True)
-        .order_by(
+        q.order_by(
             # Collectors series first, then professionals; stable order within.
             case(
                 {aud: i for i, aud in enumerate(PODCAST_AUDIENCES)},
@@ -105,6 +118,8 @@ def index():
         "podcasts/index.html",
         previews=previews,
         audience_label=_audience_label,
+        topic_label=_topic_label,
+        active_topic=topic,
         audio_url=_audio_url,
     )
 

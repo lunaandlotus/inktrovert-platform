@@ -124,3 +124,10 @@ def migrate_schema() -> None:
             if column not in existing:
                 conn.execute(text(
                     f"ALTER TABLE {table} ADD COLUMN {column} VARCHAR(2)"))
+
+        # Podcast series topic tag (tattoo / piercing / both) — nullable;
+        # the piercing seed backfills the curated series.
+        existing = {c["name"] for c in inspect(engine).get_columns("podcast_series")}
+        if "topic" not in existing:
+            conn.execute(text(
+                "ALTER TABLE podcast_series ADD COLUMN topic VARCHAR(20)"))
