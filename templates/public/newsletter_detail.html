@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block title %}{{ edition.subject }} — Newsletter — Inktrovert{% endblock %}
+
+{% block content %}
+<p><a href="{{ url_for('public.newsletter') }}">&larr; All editions</a></p>
+
+<article>
+  <p class="section-kicker">Newsletter</p>
+  <h1>{{ edition.subject }}</h1>
+  <p class="byline">{% if edition.sent_at %}Sent {{ edition.sent_at.strftime('%B %d, %Y') }}{% endif %}</p>
+  {% if edition.summary %}<p class="excerpt">{{ edition.summary }}</p>{% endif %}
+  <div class="article-body">{{ edition.body|safe }}</div>
+</article>
+
+<p><a class="btn btn-gold" href="{{ url_for('account.register') }}">Get the next one in your inbox</a></p>
+{% endblock %}

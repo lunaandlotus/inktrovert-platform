@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block title %}Newsletter — Inktrovert{% endblock %}
+
+{% block content %}
+<h1>The newsletter</h1>
+<p>New issues, convention dates, and shop stories — a few times a month, no noise.
+   <a class="btn btn-sm btn-gold" href="{{ url_for('account.register') }}">Sign up free</a></p>
+
+{% if editions %}
+<div class="grid">
+  {% for edition in editions %}
+  <article class="card">
+    <h3><a href="{{ url_for('public.newsletter_detail', slug=edition.slug) }}">{{ edition.subject }}</a></h3>
+    {% if edition.summary %}<p class="excerpt">{{ edition.summary }}</p>{% endif %}
+    <p class="meta">{% if edition.sent_at %}Sent {{ edition.sent_at.strftime('%B %d, %Y') }}{% endif %}</p>
+  </article>
+  {% endfor %}
+</div>
+{% else %}
+<p class="empty">Past editions will show up here once the first one goes out.</p>
+{% endif %}
+{% endblock %}

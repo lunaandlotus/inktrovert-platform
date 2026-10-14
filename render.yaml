@@ -1,0 +1,26 @@
+# Render Blueprint — Inktrovert platform (FREE tier preview).
+#
+# Deploy: Render dashboard → New → Blueprint → connect this repo → Apply.
+# Render shows the exact monthly cost before anything is created — this
+# blueprint is free-tier only ($0): no database, SQLite on ephemeral disk.
+# The app re-seeds itself on every boot (SEED_ON_BOOT, idempotent), so the
+# preview is always populated even though the disk is wiped on restart.
+# Free tier sleeps after 15 min idle (30-60s cold start on wake).
+
+services:
+  - type: web
+    name: inktrovert-platform
+    runtime: python
+    region: oregon
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    # Single worker: seed-on-boot check-then-insert must not race itself.
+    startCommand: gunicorn run:app --bind 0.0.0.0:$PORT --workers 1
+    healthCheckPath: /
+    envVars:
+      - key: FLASK_ENV
+        value: production
+      - key: SECRET_KEY
+        generateValue: true
+      - key: SESSION_COOKIE_SECURE
+        value: "1"

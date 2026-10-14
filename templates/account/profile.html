@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block title %}Your account — {{ site_name }}{% endblock %}
+{% block content %}
+<h2>Your account</h2>
+
+<div class="card">
+  <h3>The basics</h3>
+  <p><strong>{{ current_user.full_name or current_user.email }}</strong></p>
+  <p class="muted">{{ current_user.email }} · Member since {{ current_user.created_at.strftime('%B %d, %Y') }}</p>
+  <p>
+    {% for role in current_user.role_names() %}
+      <span class="badge">{{ role.replace('_', ' ')|title }}</span>
+    {% endfor %}
+  </p>
+  <form method="post" action="{{ url_for('account.profile') }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div class="form-group">
+      <label for="full_name">Display name</label>
+      <input type="text" id="full_name" name="full_name" value="{{ current_user.full_name }}" autocomplete="name">
+    </div>
+    <button class="btn btn-gold" type="submit">Save name</button>
+  </form>
+</div>
+
+<div class="card">
+  <h3>Your listings</h3>
+  {% if claims %}
+    <ul class="claim-list">
+      {% for claim in claims %}
+        <li>
+          <a href="{{ url_for('claims.claim_status', claim_id=claim.id) }}">{{ claim.profile.display_name }}</a>
+          <span class="badge badge-status-{{ claim.status }}">{{ claim.status|title }}</span>
+          <span class="muted">{{ claim.claimer_relationship.replace('_', ' ')|title }} · asked {{ claim.created_at.strftime('%B %d, %Y') }}</span>
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p class="muted">No listing claims yet. <a href="{{ url_for('claims.index') }}">Claim your listing</a> to verify a pro role.</p>
+  {% endif %}
+</div>
+
+<div class="card">
+  <h3>Membership</h3>
+  <p>Paid memberships aren't open yet — you're on the free Reader plan.</p>
+  {% if subscriptions %}
+    <ul>
+      {% for sub in subscriptions %}
+        <li>{{ sub.tier.name if sub.tier else 'Membership' }} — <span class="badge">{{ sub.status|title }}</span></li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+  <p class="hint">When paid plans launch, your choices will show up here.</p>
+</div>
+
+<p><a href="{{ url_for('account.logout') }}">Sign out</a></p>
+{% endblock %}

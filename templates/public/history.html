@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+
+{% block title %}History — Inktrovert{% endblock %}
+
+{% block head_extra %}
+<style>
+.timeline { position: relative; margin: 24px 0 0; padding-left: 28px; }
+.timeline::before { content: ""; position: absolute; left: 8px; top: 0; bottom: 0; width: 2px; background: var(--gold); }
+.timeline-item { position: relative; margin-bottom: 26px; }
+.timeline-item::before { content: ""; position: absolute; left: -24px; top: 6px; width: 10px; height: 10px; border-radius: 50%; background: var(--gold-deep); border: 2px solid #fff; box-shadow: 0 0 0 1px var(--gold-deep); }
+.history-issue-cover { width: 100%; aspect-ratio: 4 / 5; max-height: 520px; background-size: cover; background-position: center; border-radius: 4px; border: 1px solid var(--line); display: flex; align-items: flex-end; }
+.history-issue-cover.no-cover { align-items: center; justify-content: center; background: var(--ink); color: #fff; }
+.history-issue-cover .cover-caption { background: rgba(0,0,0,0.72); color: #fff; width: 100%; padding: 14px 18px; border-radius: 0 0 4px 4px; }
+.history-issue-cover .cover-caption h3 { margin: 0; color: #fff; }
+.history-issue-cover .cover-caption h3 a { color: #fff; }
+</style>
+{% endblock %}
+
+{% block content %}
+{% if teaser_mode %}
+<h1>The magazine's memory</h1>
+<p>The full History archive — every issue, article, and episode on one timeline — is for subscribers. Here's a peek at the stack:</p>
+
+<div class="grid">
+  {% for issue in teaser_issues %}
+  <article class="card issue-card">
+    {% if issue.cover_image %}<img src="{{ issue.cover_image }}" alt="Cover of issue #{{ issue.number }}" class="card-cover">{% endif %}
+    <h3><a href="{{ url_for('public.issue_detail', slug=issue.slug) }}">Issue #{{ issue.number }} — {{ issue.title }}</a></h3>
+    {% if issue.blurb %}<p>{{ issue.blurb }}</p>{% endif %}
+    <p><span class="badge badge-verified">🔒 Subscriber archive</span></p>
+  </article>
+  {% endfor %}
+</div>
+{% if not teaser_issues %}
+<p class="empty">No issues published yet — check back soon.</p>
+{% endif %}
+
+<p style="margin-top:24px"><a class="btn btn-gold" href="{{ url_for('support.subscribe') }}">Subscribe to unlock the full archive</a></p>
+
+{% else %}
+<h1>The magazine's memory</h1>
+<p>Every issue, article, and podcast episode — one timeline. Flip through the back issues like a stack on the coffee table.</p>
+
+<form method="get" action="{{ url_for('public.history') }}" class="filters">
+  <label class="badge" style="cursor:default">Type</label>
+  <select name="type" onchange="this.form.submit()">
+    <option value=""{% if not type_filter %} selected{% endif %}>Everything</option>
+    <option value="issue"{% if type_filter == 'issue' %} selected{% endif %}>Issues</option>
+    <option value="story"{% if type_filter == 'story' %} selected{% endif %}>Articles</option>
+    <option value="episode"{% if type_filter == 'episode' %} selected{% endif %}>Podcast episodes</option>
+  </select>
+  {% if years %}
+  <label class="badge" style="cursor:default">Year</label>
+  <select name="year" onchange="this.form.submit()">
+    <option value=""{% if not year_filter %} selected{% endif %}>All years</option>
+    {% for y in years %}
+    <option value="{{ y }}"{% if year_filter == y|string %} selected{% endif %}>{{ y }}</option>
+    {% endfor %}
+  </select>
+  {% endif %}
+  {% if type_filter or year_filter %}
+  <a class="badge" href="{{ url_for('public.history') }}">Clear</a>
+  {% endif %}
+</form>
+
+{% if items %}
+<div class="timeline">
+  {% for item in items %}
+  <div class="timeline-item">
+    {% if item.kind == 'issue' %}
+    <article class="card">
+      <p class="meta">{{ item.date.strftime('%B %Y') if item.date else '' }}</p>
+      {% if item.object.cover_image %}
+      <a href="{{ url_for('public.issue_detail', slug=item.object.slug) }}">
+        <div class="history-issue-cover" style="background-image:url('{{ item.object.cover_image }}')">
+          <div class="cover-caption">
+            <h3>Issue #{{ item.object.number }} — {{ item.object.title }}</h3>
+          </div>
+        </div>
+      </a>
+      {% else %}
+      <div class="history-issue-cover no-cover">
+        <h3><a href="{{ url_for('public.issue_detail', slug=item.object.slug) }}" style="color:#fff">Issue #{{ item.object.number }} — {{ item.object.title }}</a></h3>
+      </div>
+      {% endif %}
+      {% if item.blurb %}<p>{{ item.blurb }}</p>{% endif %}
+      <p><a class="btn btn-sm" href="{{ url_for('public.issue_detail', slug=item.object.slug) }}">Read the issue</a></p>
+    </article>
+    {% elif item.kind == 'story' %}
+    <article class="card">
+      <p class="meta">{{ item.date.strftime('%b %d, %Y') if item.date else '' }}</p>
+      <span class="badge">{{ category_label(item.object.category) }}</span>
+      <h3><a href="{{ url_for('public.story_detail', slug=item.object.slug) }}">{{ item.title }}</a></h3>
+      {% if item.blurb %}<p>{{ item.blurb }}</p>{% endif %}
+    </article>
+    {% elif item.kind == 'episode' %}
+    <article class="card">
+      <p class="meta">{{ item.date.strftime('%b %d, %Y') if item.date else '' }}</p>
+      <span class="badge">Podcast</span>
+      <h3><a href="{{ url_for('podcasts.episode_detail', series_slug=item.object.series.slug, episode_slug=item.object.slug) }}">{{ item.title }}</a></h3>
+      {% if item.blurb %}<p>{{ item.blurb }}</p>{% endif %}
+    </article>
+    {% endif %}
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<p class="empty">Nothing in the archive matches those filters. <a href="{{ url_for('public.history') }}">Clear them</a> and browse the whole timeline.</p>
+{% endif %}
+{% endif %}
+{% endblock %}

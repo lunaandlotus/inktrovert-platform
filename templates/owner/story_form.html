@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block title %}{% if is_new %}New story{% else %}Edit story{% endif %} — {{ site_name }}{% endblock %}
+{% block content %}
+<div class="section-kicker">Owner desk · Stories</div>
+<p><a href="{{ url_for('owner.stories') }}">&larr; Back to stories</a></p>
+<h1>{% if is_new %}New story{% else %}Edit story{% endif %}</h1>
+
+<form method="post">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <div class="form-group">
+    <label for="title">Title</label>
+    <input type="text" id="title" name="title" value="{{ request.form.get('title', story.title or '') }}" maxlength="250" required>
+  </div>
+  <div class="form-row">
+    <div class="form-group">
+      <label for="slug">Slug</label>
+      <input type="text" id="slug" name="slug" value="{{ request.form.get('slug', story.slug or suggested_slug) }}" maxlength="270">
+      <p class="hint">Left blank, it's made from the title.</p>
+    </div>
+    <div class="form-group">
+      <label for="category">Category</label>
+      <select id="category" name="category">
+        {% for c in categories %}
+        <option value="{{ c }}"{% if (request.form.get('category') or story.category or 'news') == c %} selected{% endif %}>{{ c }}</option>
+        {% endfor %}
+      </select>
+    </div>
+  </div>
+  <div class="form-group">
+    <label for="excerpt">Excerpt</label>
+    <textarea id="excerpt" name="excerpt" rows="3">{{ request.form.get('excerpt', story.excerpt or '') }}</textarea>
+  </div>
+  <div class="form-group">
+    <label for="body">Body</label>
+    <textarea id="body" name="body" rows="14">{{ request.form.get('body', story.body or '') }}</textarea>
+  </div>
+  <div class="form-row">
+    <div class="form-group">
+      <label for="author_name">Author name</label>
+      <input type="text" id="author_name" name="author_name" value="{{ request.form.get('author_name', story.author_name or '') }}" maxlength="120">
+    </div>
+    <div class="form-group">
+      <label for="issue_id">Issue</label>
+      <select id="issue_id" name="issue_id">
+        <option value="">No issue</option>
+        {% for i in issues %}
+        <option value="{{ i.id }}"{% if ((request.form.get('issue_id') or story.issue_id) | string) == (i.id | string) %} selected{% endif %}>#{{ i.number }} — {{ i.title }}</option>
+        {% endfor %}
+      </select>
+    </div>
+  </div>
+  <div class="form-group">
+    <label><input type="checkbox" name="is_published"{% if story.is_published %} checked{% endif %}> Published</label>
+    {% if story.published_at %}<p class="hint">Published {{ story.published_at.strftime("%B %d, %Y") }}.</p>{% endif %}
+  </div>
+  <button type="submit" class="btn btn-gold">Save story</button>
+</form>
+{% endblock %}

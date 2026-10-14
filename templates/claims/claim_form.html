@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Claim {{ profile.display_name }} — {{ site_name }}{% endblock %}
+{% block content %}
+<h1>Claim {{ profile.display_name }}</h1>
+<p class="profile-meta">
+  {% if profile.city or profile.state %}{{ profile.city }}{% if profile.city and profile.state %}, {% endif %}{{ profile.state }}<br>{% endif %}
+  {% if profile.verified %}<span class="badge badge-verified">Verified</span>{% endif %}
+  {% if profile.claim_status == "claimed" %}<span class="badge badge-claimed">Claimed</span>{% endif %}
+</p>
+{% if profile.claim_status == "claimed" %}
+<p class="alert alert-info">This listing is already claimed. You're welcome to file a claim anyway — we'll sort out who it belongs to.</p>
+{% endif %}
+
+<form method="post" action="{{ url_for('claims.claim_profile', profile_id=profile.id) }}">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+  <div class="form-group">
+    <label for="claimer_relationship">How are you connected to this listing?</label>
+    <select id="claimer_relationship" name="claimer_relationship" required>
+      <option value="">Choose one&hellip;</option>
+      {% for value, label in relationship_choices %}
+      <option value="{{ value }}">{{ label }}</option>
+      {% endfor %}
+    </select>
+  </div>
+
+  <div class="form-group">
+    <label for="evidence_text">Proof it's yours</label>
+    <textarea id="evidence_text" name="evidence_text" rows="4" required
+              placeholder="Anything that backs the claim: your site, a social profile, a shop address&hellip;"></textarea>
+  </div>
+
+  <button class="btn btn-gold" type="submit">File claim</button>
+  <a class="btn" href="{{ url_for('claims.start') }}">Cancel</a>
+</form>
+{% endblock %}

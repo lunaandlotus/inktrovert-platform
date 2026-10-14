@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}{{ campaign.title }} — fundraising drive{% endblock %}
+{% block content %}
+<section class="hero">
+  <span class="section-kicker">Fundraising drive</span>
+  <h1>{{ campaign.title }}</h1>
+  <p>
+    {% if campaign.status == "active" %}<span class="badge">Active</span>
+    {% elif campaign.status == "ended" %}<span class="badge">Ended</span>
+    {% else %}<span class="badge">Draft</span>{% endif %}
+  </p>
+  {% if campaign.starts_at or campaign.ends_at %}
+  <p class="muted">
+    {% if campaign.starts_at %}Started {{ campaign.starts_at.strftime("%B %-d, %Y") }}{% endif %}
+    {% if campaign.starts_at and campaign.ends_at %} &middot; {% endif %}
+    {% if campaign.ends_at %}Ends {{ campaign.ends_at.strftime("%B %-d, %Y") }}{% endif %}
+  </p>
+  {% endif %}
+</section>
+
+<section>
+  <h2>The goal</h2>
+  <p>{{ campaign.description }}</p>
+  {% if campaign.goal_cents %}
+  {% set pct = ((campaign.raised_cents / campaign.goal_cents * 100)|round|int if campaign.raised_cents else 0) %}
+  <div class="progress"><span style="width: {{ pct }}%"></span></div>
+  <p class="muted">${{ "%.2f"|format(campaign.raised_cents / 100) }} raised of ${{ "%.2f"|format(campaign.goal_cents / 100) }} goal — {{ pct }}%</p>
+  {% else %}
+  <p class="muted">${{ "%.2f"|format(campaign.raised_cents / 100) }} raised so far.</p>
+  {% endif %}
+  {% if campaign.status != "active" %}
+  <p class="muted">This drive {% if campaign.status == "ended" %}has ended{% else %}isn't open yet{% endif %} — contributions aren't being collected right now.</p>
+  {% else %}
+  <p class="muted">We haven't chosen payment rails yet, so this drive isn't collecting contributions right now. Watch this space.</p>
+  {% endif %}
+</section>
+
+<section>
+  <h2>Supporters</h2>
+  {% if supporter_names %}
+  <ul>
+    {% for name in supporter_names %}
+    <li>{{ name }}</li>
+    {% endfor %}
+  </ul>
+  <p class="muted">Anonymous supporters simply don't appear here — that's by design.</p>
+  {% else %}
+  <p class="empty">No public supporters yet. When this drive is funding, the names of supporters who chose to be listed will appear here.</p>
+  {% endif %}
+</section>
+
+<p><a class="btn" href="{{ url_for('support.fundraise') }}">&larr; All drives</a></p>
+{% endblock %}

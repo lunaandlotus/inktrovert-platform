@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}Events — {{ site_name }}{% endblock %}
+{% block content %}
+<div class="section-kicker">Owner desk</div>
+<h1>Event submissions</h1>
+<p class="muted">Pending submissions first. Approving puts an event on the public calendar.</p>
+
+{% if event_rows %}
+<table class="plain">
+  <thead>
+    <tr><th>Title</th><th>Where</th><th>Starts</th><th>Status</th><th></th></tr>
+  </thead>
+  <tbody>
+    {% for e in event_rows %}
+    <tr>
+      <td><strong>{{ e.title }}</strong><br><span class="muted">{{ (e.description or "")[:120] }}{% if (e.description or "")|length > 120 %}…{% endif %}</span></td>
+      <td>{% if e.venue_name %}{{ e.venue_name }}<br>{% endif %}{% if e.city %}{{ e.city }}{% if e.state %}, {{ e.state }}{% endif %}{% else %}—{% endif %}</td>
+      <td class="muted">{{ e.starts_at.strftime("%b %d, %Y") if e.starts_at else "—" }}</td>
+      <td><span class="badge {% if e.status == 'pending' %}badge-status-pending{% elif e.status == 'approved' %}badge-status-approved{% elif e.status == 'rejected' %}badge-status-rejected{% endif %}">{{ e.status }}</span></td>
+      <td>
+        {% if e.status == "pending" %}
+        <form method="post" action="{{ url_for('owner.event_approve', event_id=e.id) }}" class="inline-form">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button type="submit" class="btn btn-sm btn-gold">Approve</button>
+        </form>
+        <form method="post" action="{{ url_for('owner.event_reject', event_id=e.id) }}" class="inline-form">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button type="submit" class="btn btn-sm btn-danger">Reject</button>
+        </form>
+        {% endif %}
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<p class="empty">No event submissions.</p>
+{% endif %}
+{% endblock %}

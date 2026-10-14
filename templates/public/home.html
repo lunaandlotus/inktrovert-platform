@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+
+{% block title %}Inktrovert{% endblock %}
+
+{% block content %}
+<section class="hero">
+  <div class="hero-inner">
+    <p class="section-kicker">The magazine for the tattoo &amp; piercing world</p>
+    <h1>Inktrovert</h1>
+    <p class="hero-sub">Stories from the chair, the shop, and the convention floor —
+      for the people who collect ink and the professionals who put it there.</p>
+    <p>
+      <a class="btn btn-gold" href="{{ url_for('public.issues') }}">Read the issues</a>
+      <a class="btn" style="color:#fff;border-color:#fff" href="{{ url_for('public.history') }}">Browse the archive</a>
+    </p>
+  </div>
+</section>
+
+{% if latest_issue %}
+<section class="issue-feature">
+  <div class="issue-feature-cover"
+       {% if latest_issue.cover_image %}style="background-image:url('{{ latest_issue.cover_image }}')"{% endif %}></div>
+  <div class="issue-feature-copy">
+    <p class="section-kicker">Latest issue</p>
+    <h2><a href="{{ url_for('public.issue_detail', slug=latest_issue.slug) }}">Issue #{{ latest_issue.number }} — {{ latest_issue.title }}</a></h2>
+    {% if latest_issue.blurb %}<p class="excerpt">{{ latest_issue.blurb }}</p>{% endif %}
+    <p>
+      <a class="btn btn-dark" href="{{ url_for('public.issue_detail', slug=latest_issue.slug) }}">Read it</a>
+      <a class="btn btn-sm" href="{{ url_for('public.issue_print', slug=latest_issue.slug) }}">Print version</a>
+      <a class="btn btn-sm" href="{{ url_for('public.issue_print_pdf', slug=latest_issue.slug) }}">Download print PDF</a>
+    </p>
+  </div>
+</section>
+{% endif %}
+
+{% if stories %}
+<section>
+  <h2>Fresh off the press</h2>
+  <div class="grid">
+    {% for story in stories %}
+    <article class="card">
+      {% if story.cover_image %}<img src="{{ story.cover_image }}" alt="" class="card-cover">{% endif %}
+      <span class="badge">{{ story.category.replace('-', ' ')|title }}</span>
+      <h3><a href="{{ url_for('public.story_detail', slug=story.slug) }}">{{ story.title }}</a></h3>
+      {% if story.excerpt %}<p class="excerpt">{{ story.excerpt }}</p>{% endif %}
+      <p class="meta">{{ story.author_name }}{% if story.published_at %} · {{ story.published_at.strftime('%b %d, %Y') }}{% endif %}</p>
+    </article>
+    {% endfor %}
+  </div>
+  <p><a class="btn" href="{{ url_for('public.stories') }}">All stories</a></p>
+</section>
+{% endif %}
+
+{% if upcoming_events %}
+<section>
+  <h2>Coming up</h2>
+  <div class="grid">
+    {% for event in upcoming_events %}
+    <article class="card">
+      <h3><a href="{{ url_for('public.event_detail', slug=event.slug) }}">{{ event.title }}</a></h3>
+      <p class="meta">
+        {% if event.starts_at %}{{ event.starts_at.strftime('%b %d, %Y') }}{% endif %}
+        {% if event.city %} · {{ event.city }}{% if event.state %}, {{ event.state }}{% endif %}{% endif %}
+      </p>
+    </article>
+    {% endfor %}
+  </div>
+  <p><a class="btn" href="{{ url_for('public.events') }}">All events</a></p>
+</section>
+{% endif %}
+
+{% if featured_profiles %}
+<section>
+  <h2>Verified pros</h2>
+  <div class="grid">
+    {% for profile in featured_profiles %}
+    <article class="card">
+      <h3>{% if directory_enabled %}<a href="{{ url_for('directory.profile_detail', slug=profile.slug) }}">{{ profile.display_name }}</a>{% else %}{{ profile.display_name }}{% endif %}
+        {% if profile.verified %}<span class="badge badge-verified">Verified</span>{% endif %}</h3>
+      <p class="meta">{{ profile.kind|replace('_', ' ')|title }}{% if profile.city %} · {{ profile.city }}{% if profile.state %}, {{ profile.state }}{% endif %}{% endif %}</p>
+    </article>
+    {% endfor %}
+  </div>
+  {% if directory_browse_enabled %}<p><a class="btn" href="{{ url_for('directory.browse') }}">Find artists &amp; shops</a></p>{% endif %}
+</section>
+{% endif %}
+
+{% if latest_episodes %}
+<section>
+  <h2>On the mic</h2>
+  <div class="grid">
+    {% for row in latest_episodes %}
+    <article class="card">
+      <p class="section-kicker">{{ row.series.title }}</p>
+      <h3><a href="{{ url_for('podcasts.episode_detail', series_slug=row.series.slug, episode_slug=row.episode.slug) }}">{{ row.episode.title }}</a></h3>
+      <p class="meta">Episode {{ row.episode.episode_number }}{% if row.episode.published_at %} · {{ row.episode.published_at.strftime('%b %d, %Y') }}{% endif %}</p>
+    </article>
+    {% endfor %}
+  </div>
+  <p><a class="btn" href="{{ url_for('podcasts.index') }}">All podcasts</a></p>
+</section>
+{% endif %}
+
+<section class="newsletter-callout">
+  <h2>Get the newsletter</h2>
+  <p>New issues, convention dates, and shop stories — straight to your inbox, a few times a month. No noise.</p>
+  <p><a class="btn btn-gold" href="{{ url_for('account.register') }}">Sign up free</a>
+     <a class="btn" href="{{ url_for('public.newsletter') }}">Read past editions</a></p>
+</section>
+{% endblock %}

@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block title %}Support tiers — {{ site_name }}{% endblock %}
+{% block content %}
+<div class="section-kicker">Owner desk</div>
+<h1>Support tiers &amp; fundraisers</h1>
+<div class="alert alert-info">
+  <strong>Phase-3 stubs, read-only.</strong> No money moves through these tables yet — subscription, donation, and
+  fundraising flows aren't live. The tiers and campaigns below are placeholders so the funding engine layers on
+  without rewrites. Editing them comes with the payment-rail work.
+</div>
+
+<h2>Subscription tiers</h2>
+{% if tier_rows %}
+<table class="plain">
+  <thead>
+    <tr><th>Name</th><th>Audience</th><th>Kind</th><th>Price</th><th>Active</th></tr>
+  </thead>
+  <tbody>
+    {% for t in tier_rows %}
+    <tr>
+      <td><strong>{{ t.name }}</strong><br><span class="muted">{{ (t.description or "")[:120] }}{% if (t.description or "")|length > 120 %}…{% endif %}</span></td>
+      <td>{{ t.audience }}</td>
+      <td>{{ t.kind }}</td>
+      <td class="muted">{{ "$%.2f" | format(t.price_cents / 100) if t.price_cents else "TBD" }}</td>
+      <td><span class="badge {% if t.is_active %}badge-status-published{% endif %}">{{ "yes" if t.is_active else "no" }}</span></td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<p class="empty">No subscription tiers defined yet.</p>
+{% endif %}
+
+<h2>Fundraising campaigns</h2>
+{% if campaign_rows %}
+<table class="plain">
+  <thead>
+    <tr><th>Title</th><th>Goal</th><th>Status</th><th>Raised</th></tr>
+  </thead>
+  <tbody>
+    {% for c in campaign_rows %}
+    <tr>
+      <td><strong>{{ c.title }}</strong><br><span class="muted">{{ (c.description or "")[:120] }}{% if (c.description or "")|length > 120 %}…{% endif %}</span></td>
+      <td class="muted">{{ "$%.2f" | format(c.goal_cents / 100) if c.goal_cents else "—" }}</td>
+      <td><span class="badge {% if c.status == 'active' %}badge-status-published{% elif c.status == 'ended' %}badge-status-rejected{% endif %}">{{ c.status }}</span></td>
+      <td class="muted">{{ "$%.2f" | format(c.raised_cents / 100) }} (stub — no real payments)</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<p class="empty">No fundraising campaigns defined yet.</p>
+{% endif %}
+{% endblock %}

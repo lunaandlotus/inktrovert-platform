@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}{% if is_new %}New series{% else %}Edit series{% endif %} — {{ site_name }}{% endblock %}
+{% block content %}
+<div class="section-kicker">Owner desk · Podcasts</div>
+<p><a href="{{ url_for('owner.podcasts') }}">&larr; Back to podcasts</a></p>
+<h1>{% if is_new %}New podcast series{% else %}Edit series{% endif %}</h1>
+
+<form method="post">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <div class="form-group">
+    <label for="title">Title</label>
+    <input type="text" id="title" name="title" value="{{ request.form.get('title', series.title or '') }}" maxlength="200" required>
+  </div>
+  <div class="form-row">
+    <div class="form-group">
+      <label for="slug">Slug</label>
+      <input type="text" id="slug" name="slug" value="{{ request.form.get('slug', series.slug or '') }}" maxlength="220">
+      <p class="hint">Left blank, it's made from the title.</p>
+    </div>
+    <div class="form-group">
+      <label for="audience">Audience</label>
+      <select id="audience" name="audience">
+        <option value="collectors"{% if (request.form.get('audience') or series.audience or 'collectors') == 'collectors' %} selected{% endif %}>collectors — artist stories, interviews, studio features</option>
+        <option value="professionals"{% if (request.form.get('audience') or series.audience) == 'professionals' %} selected{% endif %}>professionals — industry news, continued learning</option>
+      </select>
+    </div>
+  </div>
+  <div class="form-group">
+    <label for="description">Description</label>
+    <textarea id="description" name="description" rows="4">{{ request.form.get('description', series.description or '') }}</textarea>
+  </div>
+  <div class="form-group">
+    <label><input type="checkbox" name="is_active"{% if is_new or series.is_active %} checked{% endif %}> Active</label>
+  </div>
+  <button type="submit" class="btn btn-gold">Save series</button>
+</form>
+{% endblock %}

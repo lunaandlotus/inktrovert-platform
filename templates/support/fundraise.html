@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}Fundraising drives — support the magazine{% endblock %}
+{% block content %}
+<section class="hero">
+  <span class="section-kicker">Fundraise</span>
+  <h1>Drives with a goal.</h1>
+  <p class="muted">Now and then we raise money for something specific — a print issue, a big shoot, new gear for the podcast studio. Active drives are listed first, with the goal and how far along it is.</p>
+</section>
+
+{% if campaigns %}
+<div class="grid">
+  {% for c in campaigns %}
+  <article class="card">
+    <span class="section-kicker">
+      {% if c.status == "active" %}<span class="badge">Active</span>
+      {% elif c.status == "ended" %}<span class="badge">Ended</span>
+      {% else %}<span class="badge">Draft</span>{% endif %}
+    </span>
+    <h2><a href="{{ url_for('support.campaign_detail', slug=c.slug) }}">{{ c.title }}</a></h2>
+    <p class="muted">{{ c.description|truncate(160) }}</p>
+    {% if c.goal_cents %}
+    {% set pct = ((c.raised_cents / c.goal_cents * 100)|round|int) if c.raised_cents else 0 %}
+    <div class="progress"><span style="width: {{ pct }}%"></span></div>
+    <p class="muted">${{ "%.2f"|format(c.raised_cents / 100) }} raised of ${{ "%.2f"|format(c.goal_cents / 100) }} goal</p>
+    {% else %}
+    <p class="muted">${{ "%.2f"|format(c.raised_cents / 100) }} raised (no goal set yet)</p>
+    {% endif %}
+    <a class="btn" href="{{ url_for('support.campaign_detail', slug=c.slug) }}">View drive</a>
+  </article>
+  {% endfor %}
+</div>
+{% else %}
+<p class="empty">No fundraising drives yet. When we launch one, you'll find it here.</p>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% block title %}Lead: {{ lead.headline[:60] }} — {{ site_name }}{% endblock %}
+{% block content %}
+<div class="section-kicker">Owner desk · Story leads</div>
+<p><a href="{{ url_for('owner.leads', status=lead.status) }}">&larr; Back to {{ lead.status }} leads</a></p>
+<h1>{{ lead.headline }}</h1>
+<p><span class="badge {% if lead.status == 'new' %}badge-status-new{% elif lead.status == 'discarded' %}badge-status-discarded{% elif lead.status == 'promoted' %}badge-status-published{% endif %}">{{ lead.status }}</span></p>
+
+<dl class="spec-list">
+  <dt>Source</dt>
+  <dd>{{ lead.source_name or "Unknown source" }} — <a href="{{ lead.source_url }}" target="_blank" rel="noopener">open the link</a></dd>
+  <dt>Found</dt>
+  <dd>{{ lead.found_date.strftime("%B %d, %Y") if lead.found_date else "—" }}{% if lead.submitted_by %} · via {{ lead.submitted_by }}{% endif %}</dd>
+  <dt>Suggested angle</dt>
+  <dd>{{ lead.suggested_angle or "No angle suggested." }}</dd>
+  <dt>Notes</dt>
+  <dd>{{ lead.notes or "—" }}</dd>
+  {% if lead.promoted_story %}
+  <dt>Promoted to</dt>
+  <dd><a href="{{ url_for('owner.story_edit', story_id=lead.promoted_story.id) }}">{{ lead.promoted_story.title }}</a></dd>
+  {% endif %}
+</dl>
+
+<h2>Decide</h2>
+<div class="grid">
+  <div class="card">
+    <h3>Mark reviewing</h3>
+    <p class="muted">You're looking into it. Stays in the inbox until promoted or discarded.</p>
+    <form method="post">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <input type="hidden" name="action" value="reviewing">
+      <button type="submit" class="btn btn-sm">Mark reviewing</button>
+    </form>
+  </div>
+  <div class="card">
+    <h3>Discard</h3>
+    <form method="post">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <input type="hidden" name="action" value="discard">
+      <div class="form-group">
+        <label for="note">Why not? (optional)</label>
+        <input type="text" id="note" name="note" maxlength="500">
+      </div>
+      <button type="submit" class="btn btn-sm btn-danger">Discard lead</button>
+    </form>
+  </div>
+  <div class="card">
+    <h3>Promote to story</h3>
+    <p class="muted">Turns this into an unpublished draft. You'll land on the story editor to write it up.</p>
+    <form method="post">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <input type="hidden" name="action" value="promote">
+      <div class="form-group">
+        <label for="category">Category</label>
+        <select id="category" name="category">
+          {% for c in categories %}
+          <option value="{{ c }}">{{ c }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="author_name">Author name</label>
+        <input type="text" id="author_name" name="author_name" value="{{ default_author }}" maxlength="120">
+      </div>
+      <button type="submit" class="btn btn-sm btn-gold">Promote to draft story</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

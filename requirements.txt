@@ -1,0 +1,36 @@
+# Inktrovert platform — pinned runtime + test dependencies.
+# Mirrors ~/workspace/luna-lotus-portals/requirements.txt (same proven stack),
+# trimmed to what this app uses: no Google APIs, no Stripe, no web push (yet).
+# Python 3.11+ (developed on 3.12).
+# Install:  python -m venv .venv && .venv/bin/pip install -r requirements.txt
+Flask==3.1.0
+Flask-Login==0.6.3
+gunicorn==26.2.0
+Jinja2==3.1.6
+MarkupSafe==3.0.3
+SQLAlchemy==2.0.36
+Werkzeug==3.1.8
+argon2-cffi-bindings==26.1.0
+argon2-cffi==23.1.0
+blinker==1.9.0
+cffi==2.1.1
+click==8.5.0
+cryptography==50.0.1
+itsdangerous==2.2.0
+packaging==26.3
+psycopg-binary==3.2.13
+psycopg==3.2.13
+pycparser==3.0
+pytest==8.3.4
+typing_extensions==4.16.0
+# Print stylesheet + per-issue PDF export (WeasyPrint; no headless Chrome).
+brotli==1.2.0
+zopfli==0.4.3
+webencodings==0.6.1
+Pyphen==0.18.1
+pydyf==0.13.0
+fonttools==4.66.1
+tinyhtml5==2.1.0
+tinycss2==1.5.1
+cssselect2==0.10.1
+weasyprint==66.0

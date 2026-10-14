@@ -1,0 +1,146 @@
+{% extends "base.html" %}
+{% block title %}{{ profile.display_name }} — {{ site_name }}{% endblock %}
+{% block content %}
+<div class="profile-head">
+  <div>
+    <p><a href="{{ url_for('directory.browse') }}">&larr; Back to the directory</a></p>
+    <h1>{{ profile.display_name }}</h1>
+    <p>
+      <span class="badge">{{ kind_label }}</span>
+      {% if profile.verified %}<span class="badge badge-verified">Verified</span>{% endif %}
+      {% if profile.claim_status == "claimed" %}<span class="badge badge-claimed">Claimed</span>{% endif %}
+    </p>
+    <p class="profile-meta">
+      {% if profile.city or profile.state %}{{ profile.city }}{% if profile.city and profile.state %}, {% endif %}{{ profile.state }}{% if profile.country %} &middot; {{ profile.country }}{% endif %}{% endif %}
+    </p>
+  </div>
+</div>
+
+{% if profile.bio %}
+<section>
+  <h2>About</h2>
+  <p>{{ profile.bio }}</p>
+</section>
+{% endif %}
+
+{% if profile.specialties %}
+<section>
+  <h2>Specialties</h2>
+  <ul class="spec-list">
+    {% for spec in profile.specialties %}<li>{{ spec }}</li>{% endfor %}
+  </ul>
+</section>
+{% endif %}
+
+{% if profile.services %}
+<section>
+  <h2>Services</h2>
+  <ul class="spec-list">
+    {% for service in profile.services %}<li>{{ service }}</li>{% endfor %}
+  </ul>
+</section>
+{% endif %}
+
+{% if profile.collections %}
+<section>
+  <h2>Portfolio</h2>
+  {% for collection in profile.collections %}
+  <h3>{{ collection.title }}</h3>
+  {% if collection.description %}<p class="muted">{{ collection.description }}</p>{% endif %}
+  {% if collection.items %}
+  <div class="grid">
+    {% for item in collection.items %}
+    <div class="card">
+      {% if item.image %}<img src="{{ item.image }}" alt="{{ item.caption or collection.title }}" style="max-width:100%;border-radius:4px;">{% endif %}
+      {% if item.caption %}<p>{{ item.caption }}</p>{% endif %}
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+  {% endfor %}
+</section>
+{% endif %}
+
+{% if profile.flash %}
+<section>
+  <h2>Flash</h2>
+  <div class="grid">
+    {% for piece in profile.flash %}
+    <div class="card">
+      {% if piece.image %}<img src="{{ piece.image }}" alt="{{ piece.title }}" style="max-width:100%;border-radius:4px;">{% endif %}
+      <h3>{{ piece.title }}</h3>
+      <p>
+        <span class="badge badge-flash-{{ piece.status }}">{{ flash_labels.get(piece.status, piece.status) }}</span>
+        {% if piece.price_cents is not none %}<span class="muted">${{ "%.2f"|format(piece.price_cents / 100) }}</span>{% endif %}
+        {% if piece.size %}<span class="muted">&middot; {{ piece.size }}</span>{% endif %}
+      </p>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+
+{% if members %}
+<section>
+  <h2>The team</h2>
+  <div class="grid">
+    {% for member, role_label in members %}
+    <div class="card">
+      <h3><a href="{{ url_for('directory.profile_detail', slug=member.slug) }}">{{ member.display_name }}</a></h3>
+      <p class="profile-meta">{% if role_label %}{{ role_label }}{% else %}{{ kind_labels.get(member.kind, member.kind) }}{% endif %}</p>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+
+{% if studios %}
+<section>
+  <h2>Works with</h2>
+  <div class="grid">
+    {% for studio, role_label in studios %}
+    <div class="card">
+      <h3><a href="{{ url_for('directory.profile_detail', slug=studio.slug) }}">{{ studio.display_name }}</a></h3>
+      <p class="profile-meta">{% if role_label %}{{ role_label }}{% else %}Studio{% endif %}</p>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+
+<section>
+  <h2>Booking</h2>
+  {% if profile.booking_mode == "external" and profile.booking_url %}
+  <p><a class="btn btn-gold" href="{{ profile.booking_url }}" target="_blank" rel="noopener">Book with them</a></p>
+  {% elif profile.booking_mode == "platform" %}
+  <p class="muted">Platform booking is coming in a later phase.</p>
+  {% else %}
+  <p class="muted">No online booking link on file — reach out directly.</p>
+  {% endif %}
+</section>
+
+<section>
+  <h2>Contact</h2>
+  <p class="profile-meta">
+    {% if profile.phone %}{{ profile.phone }}<br>{% endif %}
+    {% if profile.email %}<a href="mailto:{{ profile.email }}">{{ profile.email }}</a><br>{% endif %}
+    {% if profile.website %}<a href="{{ profile.website }}" target="_blank" rel="noopener">{{ profile.website }}</a>{% endif %}
+    {% if not profile.phone and not profile.email and not profile.website %}No contact details on file yet.{% endif %}
+  </p>
+</section>
+
+{% if profile.policies %}
+<section>
+  <h2>Policies</h2>
+  <p>{{ profile.policies }}</p>
+</section>
+{% endif %}
+
+<p class="muted">
+  {% if profile.claim_status == "unclaimed" %}
+  Is this your listing? <a href="{{ url_for('claims.claim_profile', profile_id=profile.id) }}">Claim it</a> and take charge of it.
+  {% elif profile.claim_status == "pending" %}
+  A claim on this listing is under review.
+  {% endif %}
+</p>
+{% endblock %}

@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block title %}{% if is_new %}New episode{% else %}Edit episode{% endif %} — {{ site_name }}{% endblock %}
+{% block content %}
+<div class="section-kicker">Owner desk · Podcasts</div>
+<p><a href="{{ url_for('owner.podcasts') }}">&larr; Back to podcasts</a></p>
+<h1>{% if is_new %}New episode{% else %}Edit episode{% endif %}</h1>
+<p class="muted">Series: {{ series.title }}</p>
+
+<form method="post">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <div class="form-row">
+    <div class="form-group">
+      <label for="episode_number">Episode number</label>
+      <input type="number" id="episode_number" name="episode_number" value="{{ request.form.get('episode_number', episode.episode_number or 1) }}" min="1">
+    </div>
+    <div class="form-group">
+      <label for="title">Title</label>
+      <input type="text" id="title" name="title" value="{{ request.form.get('title', episode.title or '') }}" maxlength="250" required>
+    </div>
+  </div>
+  <div class="form-group">
+    <label for="audio_file">Audio file</label>
+    <input type="text" id="audio_file" name="audio_file" value="{{ request.form.get('audio_file', episode.audio_file or '') }}" maxlength="500" placeholder="audio/ep1.mp3">
+    <p class="hint">Path under uploads/ (for example audio/ep1.mp3). Drop the mp3 in the uploads folder first.</p>
+  </div>
+  <div class="form-group">
+    <label for="description">Show notes</label>
+    <textarea id="description" name="description" rows="8">{{ request.form.get('description', episode.description or '') }}</textarea>
+  </div>
+  <div class="form-row">
+    <div class="form-group">
+      <label for="related_story_id">Related story (optional)</label>
+      <select id="related_story_id" name="related_story_id">
+        <option value="">None</option>
+        {% for s in stories %}
+        <option value="{{ s.id }}"{% if ((request.form.get('related_story_id') or episode.related_story_id) | string) == (s.id | string) %} selected{% endif %}>{{ s.title[:70] }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="form-group">
+      <label for="related_profile_id">Related profile (optional)</label>
+      <select id="related_profile_id" name="related_profile_id">
+        <option value="">None</option>
+        {% for p in profiles %}
+        <option value="{{ p.id }}"{% if ((request.form.get('related_profile_id') or episode.related_profile_id) | string) == (p.id | string) %} selected{% endif %}>{{ p.display_name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+  </div>
+  <div class="form-group">
+    <label><input type="checkbox" name="is_published"{% if episode.is_published %} checked{% endif %}> Published</label>
+    {% if episode.published_at %}<p class="hint">Published {{ episode.published_at.strftime("%B %d, %Y") }}.</p>{% endif %}
+  </div>
+  <button type="submit" class="btn btn-gold">Save episode</button>
+</form>
+{% endblock %}

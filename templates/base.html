@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% block title %}{{ site_name }}{% endblock %} — {{ site_full_name }}</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/inktrovert.css') }}">
+{% block head_extra %}{% endblock %}
+</head>
+<body>
+<header class="site-header">
+  <div class="wrap header-inner">
+    <a class="brand" href="{{ url_for('public.home') }}">
+      <span class="brand-mark">Ink</span><span class="brand-rest">trovert</span>
+      <span class="brand-sub">Tattoo and Body Piercing Professionals Collective</span>
+    </a>
+    <nav class="main-nav">
+      <a href="{{ url_for('public.home') }}">Magazine</a>
+      <a href="{{ url_for('directory.browse') }}">Find artists &amp; shops</a>
+      <a href="{{ url_for('podcasts.index') }}">Podcasts</a>
+      <a href="{{ url_for('public.events') }}">Events</a>
+      <a href="{{ url_for('support.index') }}">Support us</a>
+    </nav>
+    <div class="account-nav">
+      {% if current_user %}
+        {% if current_user.has_role('platform_owner') %}
+          <a class="owner-link" href="{{ url_for('owner.dashboard') }}">Owner desk</a>
+        {% endif %}
+        <a href="{{ url_for('account.profile') }}">{{ current_user.full_name or current_user.email }}</a>
+        <a href="{{ url_for('account.logout') }}">Sign out</a>
+      {% else %}
+        <a href="{{ url_for('account.login') }}">Sign in</a>
+        <a class="btn btn-gold btn-sm" href="{{ url_for('account.register') }}">Join free</a>
+      {% endif %}
+    </div>
+  </div>
+</header>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    <div class="wrap flashes">
+      {% for category, message in messages %}
+        <div class="alert alert-{{ category }}">{{ message }}</div>
+      {% endfor %}
+    </div>
+  {% endif %}
+{% endwith %}
+
+<main class="wrap">
+  {% block content %}{% endblock %}
+</main>
+
+<footer class="site-footer">
+  <div class="wrap footer-inner">
+    <div>
+      <strong>Inktrovert</strong><br>
+      <span class="muted">Tattoo and Body Piercing Professionals Collective</span>
+    </div>
+    <div class="footer-links">
+      <a href="{{ url_for('public.about') }}">About</a>
+      <a href="{{ url_for('public.newsletter') }}">Newsletter</a>
+      <a href="{{ url_for('claims.index') }}">Claim your listing</a>
+      <a href="{{ url_for('support.index') }}">Support the magazine</a>
+    </div>
+  </div>
+  <div class="wrap footer-note muted">A magazine for the business and the customer.</div>
+</footer>
+{% block scripts %}{% endblock %}
+</body>
+</html>

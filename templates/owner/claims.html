@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}Claim requests — {{ site_name }}{% endblock %}
+{% block content %}
+<div class="section-kicker">Owner desk</div>
+<h1>Claim requests</h1>
+<p class="muted">Pending requests first. Approving marks the listing claimed and verified, and hands it to the requester.</p>
+
+{% if claim_rows %}
+<table class="plain">
+  <thead>
+    <tr><th>Listing</th><th>Requester</th><th>Relationship</th><th>Evidence</th><th>Status</th><th></th></tr>
+  </thead>
+  <tbody>
+    {% for c in claim_rows %}
+    <tr>
+      <td><strong>{{ c.profile.display_name }}</strong><br><span class="muted">{{ c.profile.kind }} · {{ c.profile.city }}{% if c.profile.state %}, {{ c.profile.state }}{% endif %}</span></td>
+      <td>{{ c.user.full_name or c.user.email }}<br><span class="muted">{{ c.user.email }}</span></td>
+      <td>{{ c.claimer_relationship }}</td>
+      <td><span class="muted">{{ (c.evidence_text or "")[:140] }}{% if (c.evidence_text or "")|length > 140 %}…{% endif %}{% if not c.evidence_text and not c.evidence_file %}—{% endif %}</span></td>
+      <td><span class="badge {% if c.status == 'pending' %}badge-status-pending{% elif c.status == 'approved' %}badge-status-approved{% elif c.status == 'rejected' %}badge-status-rejected{% endif %}">{{ c.status }}</span></td>
+      <td>
+        {% if c.status == "pending" %}
+        <form method="post" action="{{ url_for('owner.claim_approve', claim_id=c.id) }}" class="inline-form">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button type="submit" class="btn btn-sm btn-gold">Approve</button>
+        </form>
+        <form method="post" action="{{ url_for('owner.claim_reject', claim_id=c.id) }}" class="inline-form">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <input type="text" name="reviewer_note" placeholder="Reason (optional)" maxlength="500">
+          <button type="submit" class="btn btn-sm btn-danger">Reject</button>
+        </form>
+        {% elif c.reviewer_note %}
+        <span class="muted">Note: {{ c.reviewer_note }}</span>
+        {% endif %}
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<p class="empty">No claim requests.</p>
+{% endif %}
+{% endblock %}

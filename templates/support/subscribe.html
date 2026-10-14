@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Subscribe — support the magazine{% endblock %}
+{% block content %}
+<section class="hero">
+  <span class="section-kicker">Subscribe</span>
+  <h1>Become an Inktrovert subscriber.</h1>
+  <p class="muted">Subscriptions are the steady heartbeat of the magazine: they pay the writers and photographers so the stories stay free for everyone else. Here's what's coming.</p>
+  <p><span class="badge">Memberships aren't open yet — we're choosing payment rails. This is what's coming.</span></p>
+</section>
+
+{% if tiers %}
+<div class="grid">
+  {% for tier in tiers %}
+  <article class="card">
+    <span class="section-kicker">{{ tier.name }}</span>
+    <p class="muted">{{ tier.description or "A subscription tier for magazine readers." }}</p>
+    {% if tier.perks %}
+    <ul>
+      {% for perk in tier.perks %}
+      <li>{{ perk }}</li>
+      {% endfor %}
+    </ul>
+    {% endif %}
+    <p><strong>{% if tier.price_cents is not none %}${{ "%.2f"|format(tier.price_cents / 100) }}{% else %}To be announced{% endif %}</strong></p>
+  </article>
+  {% endfor %}
+</div>
+{% else %}
+<p class="empty">Subscription tiers are still being set up. Check back soon.</p>
+{% endif %}
+
+<section>
+  <h2>For studios</h2>
+  <p class="muted">Run a shop or work as a professional artist? Professional and Studio Partner tiers are coming in a later phase — they'll live on the studio side of the platform, separate from magazine subscriptions. We'll say so loudly when they're ready.</p>
+</section>
+{% endblock %}

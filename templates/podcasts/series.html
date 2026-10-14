@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block title %}{{ series.title }} — Podcasts — {{ site_name }}{% endblock %}
+
+{% block content %}
+<p class="meta"><a href="{{ url_for('podcasts.index') }}">&larr; All podcasts</a></p>
+
+<section class="hero">
+  <p class="section-kicker" style="color: var(--gold);">{{ audience_label(series.audience) }}</p>
+  <h1>{{ series.title }}</h1>
+  {% if series.description %}
+    <p>{{ series.description }}</p>
+  {% endif %}
+</section>
+
+{% if series.cover_image %}
+  <p><img src="{{ url_for('uploaded_file', filename=series.cover_image) }}"
+          alt="{{ series.title }} cover art" style="max-width: 320px; border-radius: 4px;"></p>
+{% endif %}
+
+{% if episodes %}
+  <div class="grid">
+    {% for episode in episodes %}
+      <article class="card">
+        <p class="meta"><span class="episode-no">Episode {{ episode.episode_number }}</span></p>
+        <h3>
+          <a href="{{ url_for('podcasts.episode_detail', series_slug=series.slug, episode_slug=episode.slug) }}">{{ episode.title }}</a>
+        </h3>
+        {% if episode.description %}
+          <p class="byline">{{ episode.description|striptags|truncate(160) }}</p>
+        {% endif %}
+        <p class="meta">
+          {% if episode.duration_seconds %}{{ episode.duration_seconds|duration }} · {% endif %}
+          {% if episode.published_at %}{{ episode.published_at.strftime('%b %d, %Y') }} · {% endif %}
+          <a href="{{ url_for('podcasts.episode_detail', series_slug=series.slug, episode_slug=episode.slug) }}">{% if audio_url(episode) %}Listen{% else %}Show notes{% endif %}</a>
+        </p>
+      </article>
+    {% endfor %}
+  </div>
+{% else %}
+  <p class="empty">No episodes published yet — check back soon.</p>
+{% endif %}
+{% endblock %}

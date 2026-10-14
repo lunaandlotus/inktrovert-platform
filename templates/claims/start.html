@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}Find your listing — {{ site_name }}{% endblock %}
+{% block content %}
+<h1>Find your listing</h1>
+<p class="muted">Search the directory for your name, studio, or brand. If it's here, you can claim it. If not, add it yourself.</p>
+
+<form class="filters" method="get" action="{{ url_for('claims.start') }}">
+  <div class="form-row">
+    <div class="form-group">
+      <label for="q">Search listings</label>
+      <input type="text" id="q" name="q" value="{{ q }}" placeholder="Name, city, or state">
+    </div>
+  </div>
+  <button class="btn btn-gold" type="submit">Search</button>
+</form>
+
+{% if q %}
+  {% if results %}
+  <div class="grid">
+    {% for profile in results %}
+    <div class="card">
+      <h3>{{ profile.display_name }}</h3>
+      <p class="profile-meta">
+        {% if profile.city or profile.state %}{{ profile.city }}{% if profile.city and profile.state %}, {% endif %}{{ profile.state }}<br>{% endif %}
+        {% if profile.verified %}<span class="badge badge-verified">Verified</span>{% endif %}
+        {% if profile.claim_status == "claimed" %}<span class="badge badge-claimed">Claimed</span>{% endif %}
+      </p>
+      <p><a class="btn" href="{{ url_for('claims.claim_profile', profile_id=profile.id) }}">Claim this listing</a></p>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="empty">
+    <p>Nothing matched &ldquo;{{ q }}&rdquo;.</p>
+    <p><a class="btn btn-gold" href="{{ url_for('claims.new_listing') }}">Add it and claim it</a></p>
+  </div>
+  {% endif %}
+{% else %}
+<p class="muted">Don't see your listing? <a href="{{ url_for('claims.new_listing') }}">Create it</a> and claim it in one step.</p>
+{% endif %}
+{% endblock %}

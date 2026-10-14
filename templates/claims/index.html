@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}Claim your listing — {{ site_name }}{% endblock %}
+{% block content %}
+<h1>Claim your listing</h1>
+<p>
+  A claimed listing is yours to keep current: portfolio, flash, services,
+  contact details, and booking links. Verified listings carry a gold badge
+  so collectors know they're looking at the real you.
+</p>
+<p>How it works:</p>
+<ol>
+  <li><a href="{{ url_for('claims.start') }}">Find your listing</a> — search the directory for your name or studio.</li>
+  <li>Can't find it? <a href="{{ url_for('claims.new_listing') }}">Add it</a> and claim it in one step.</li>
+  <li>We review every claim by hand. You'll see the decision here.</li>
+</ol>
+
+<h2>Your claims</h2>
+{% if claims %}
+<table class="plain">
+  <thead>
+    <tr><th>Listing</th><th>Your role</th><th>Status</th><th>Filed</th><th></th></tr>
+  </thead>
+  <tbody>
+    {% for claim in claims %}
+    <tr>
+      <td>
+        {% if claim.profile %}
+        <a href="{{ url_for('directory.profile_detail', slug=claim.profile.slug) }}">{{ claim.profile.display_name }}</a>
+        {% else %}Listing removed{% endif %}
+      </td>
+      <td>{{ relationship_labels.get(claim.claimer_relationship, claim.claimer_relationship) }}</td>
+      <td><span class="badge badge-status-{{ claim.status }}">{{ status_labels.get(claim.status, claim.status) }}</span></td>
+      <td>{{ claim.created_at.strftime("%b %d, %Y") if claim.created_at }}</td>
+      <td><a href="{{ url_for('claims.claim_status', claim_id=claim.id) }}">Details</a></td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<div class="empty">
+  <p>You haven't filed any claims yet.</p>
+  <p><a class="btn btn-gold" href="{{ url_for('claims.start') }}">Find your listing</a></p>
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+{% block title %}Owner desk — {{ site_name }}{% endblock %}
+{% block content %}
+<div class="section-kicker">Owner desk</div>
+<h1>The desk</h1>
+<p class="muted">Everything that needs you, in one place. Nothing here goes public until you say so.</p>
+
+<div class="grid">
+  <div class="card">
+    <h3>Story leads</h3>
+    <p>
+      {% for s in lead_statuses %}
+      <a href="{{ url_for('owner.leads', status=s) }}" class="badge {% if s == 'new' %}badge-status-new{% elif s == 'discarded' %}badge-status-discarded{% elif s == 'promoted' %}badge-status-published{% else %}badge{% endif %}">{{ lead_counts.get(s, 0) }} {{ s }}</a>
+      {% endfor %}
+    </p>
+    <p><a href="{{ url_for('owner.leads') }}" class="btn btn-sm">Open the inbox</a></p>
+  </div>
+  <div class="card">
+    <h3>Claim requests</h3>
+    <p><span class="badge badge-status-pending">{{ pending_claims }} pending</span></p>
+    <p><a href="{{ url_for('owner.claims') }}" class="btn btn-sm">Review claims</a></p>
+  </div>
+  <div class="card">
+    <h3>Events</h3>
+    <p><span class="badge badge-status-pending">{{ pending_events }} pending</span></p>
+    <p><a href="{{ url_for('owner.events') }}" class="btn btn-sm">Review events</a></p>
+  </div>
+  <div class="card">
+    <h3>Stories</h3>
+    <p>
+      <span class="badge badge-status-published">{{ published_stories }} published</span>
+      <span class="badge">{{ draft_stories }} drafts</span>
+    </p>
+    <p><a href="{{ url_for('owner.stories') }}" class="btn btn-sm">Manage stories</a></p>
+  </div>
+  <div class="card">
+    <h3>Issues</h3>
+    <p><span class="badge">{{ issue_count }} editions</span></p>
+    <p><a href="{{ url_for('owner.issues') }}" class="btn btn-sm">Manage issues</a></p>
+  </div>
+  <div class="card">
+    <h3>Podcast episodes</h3>
+    <p><span class="badge">{{ episode_count }} episodes</span></p>
+    <p><a href="{{ url_for('owner.podcasts') }}" class="btn btn-sm">Manage podcasts</a></p>
+  </div>
+</div>
+
+<h2>Needs you</h2>
+<div class="grid">
+  <div class="card">
+    <h3>Newest leads</h3>
+    {% if new_leads %}
+    <ul>
+      {% for lead in new_leads %}
+      <li><a href="{{ url_for('owner.lead_detail', lead_id=lead.id) }}">{{ lead.headline }}</a></li>
+      {% endfor %}
+    </ul>
+    {% else %}
+    <p class="empty">Inbox is clear.</p>
+    {% endif %}
+  </div>
+  <div class="card">
+    <h3>Claim requests</h3>
+    {% if pending_claim_list %}
+    <ul>
+      {% for c in pending_claim_list %}
+      <li>{{ c.profile.display_name }} — {{ c.claimer_relationship }}</li>
+      {% endfor %}
+    </ul>
+    <p><a href="{{ url_for('owner.claims') }}" class="btn btn-sm">Review all</a></p>
+    {% else %}
+    <p class="empty">Nothing waiting.</p>
+    {% endif %}
+  </div>
+  <div class="card">
+    <h3>Event submissions</h3>
+    {% if pending_event_list %}
+    <ul>
+      {% for e in pending_event_list %}
+      <li>{{ e.title }}{% if e.city %} — {{ e.city }}{% endif %}</li>
+      {% endfor %}
+    </ul>
+    <p><a href="{{ url_for('owner.events') }}" class="btn btn-sm">Review all</a></p>
+    {% else %}
+    <p class="empty">Nothing waiting.</p>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}{% if is_new %}New edition{% else %}Edit edition{% endif %} — {{ site_name }}{% endblock %}
+{% block content %}
+<div class="section-kicker">Owner desk · Newsletter</div>
+<p><a href="{{ url_for('owner.newsletter') }}">&larr; Back to newsletter</a></p>
+<h1>{% if is_new %}New edition{% else %}Edit edition{% endif %}</h1>
+
+<form method="post">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <div class="form-group">
+    <label for="subject">Subject</label>
+    <input type="text" id="subject" name="subject" value="{{ request.form.get('subject', edition.subject or '') }}" maxlength="250" required>
+  </div>
+  <div class="form-group">
+    <label for="slug">Slug</label>
+    <input type="text" id="slug" name="slug" value="{{ request.form.get('slug', edition.slug or '') }}" maxlength="270">
+    <p class="hint">Left blank, it's made from the subject.</p>
+  </div>
+  <div class="form-group">
+    <label for="summary">Summary</label>
+    <textarea id="summary" name="summary" rows="3">{{ request.form.get('summary', edition.summary or '') }}</textarea>
+  </div>
+  <div class="form-group">
+    <label for="body">Body</label>
+    <textarea id="body" name="body" rows="16">{{ request.form.get('body', edition.body or '') }}</textarea>
+  </div>
+  <div class="form-group">
+    <label><input type="checkbox" name="is_archived"{% if edition.is_archived %} checked{% endif %}> Archived (public archive page)</label>
+  </div>
+  <button type="submit" class="btn btn-gold">Save edition</button>
+</form>
+{% endblock %}

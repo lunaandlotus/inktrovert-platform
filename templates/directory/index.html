@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block title %}Find artists &amp; shops — {{ site_name }}{% endblock %}
+{% block content %}
+<h1>Find artists &amp; shops</h1>
+<p class="muted">Tattoo artists, piercers, studios, and brands across the collective. Search by name, style, or place.</p>
+
+<form class="filters" method="get" action="{{ url_for('directory.browse') }}">
+  <div class="form-row">
+    <div class="form-group">
+      <label for="q">Name</label>
+      <input type="text" id="q" name="q" value="{{ filters.q }}" placeholder="Studio or artist name">
+    </div>
+    <div class="form-group">
+      <label for="style">Style</label>
+      <input type="text" id="style" name="style" value="{{ filters.style }}" placeholder="e.g. blackwork, fine line">
+    </div>
+    <div class="form-group">
+      <label for="location">Location</label>
+      <input type="text" id="location" name="location" value="{{ filters.location }}" placeholder="City or state">
+    </div>
+    <div class="form-group">
+      <label for="kind">Kind</label>
+      <select id="kind" name="kind">
+        <option value="">All kinds</option>
+        {% for kind in kinds %}
+        <option value="{{ kind }}" {% if filters.kind == kind %}selected{% endif %}>{{ kind_labels.get(kind, kind) }}</option>
+        {% endfor %}
+      </select>
+    </div>
+  </div>
+  <button class="btn btn-gold" type="submit">Search</button>
+  {% if filters.q or filters.style or filters.location or filters.kind %}
+  <a class="btn" href="{{ url_for('directory.browse') }}">Clear</a>
+  {% endif %}
+</form>
+
+{% if profiles %}
+<div class="grid">
+  {% for profile in profiles %}
+  <div class="card">
+    <h3><a href="{{ url_for('directory.profile_detail', slug=profile.slug) }}">{{ profile.display_name }}</a></h3>
+    <p>
+      <span class="badge">{{ kind_labels.get(profile.kind, profile.kind) }}</span>
+      {% if profile.verified %}<span class="badge badge-verified">Verified</span>{% endif %}
+      {% if profile.claim_status == "claimed" %}<span class="badge badge-claimed">Claimed</span>{% endif %}
+    </p>
+    <p class="profile-meta">
+      {% if profile.city or profile.state %}{{ profile.city }}{% if profile.city and profile.state %}, {% endif %}{{ profile.state }}<br>{% endif %}
+    </p>
+    {% if profile.specialties %}
+    <p>
+      {% for spec in profile.specialties[:5] %}<span class="badge">{{ spec }}</span> {% endfor %}
+    </p>
+    {% endif %}
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<div class="empty">
+  <p>No listings match that search yet.</p>
+  <p><a href="{{ url_for('claims.new_listing') }}">Add a listing</a> — tell us who's missing and claim it in one step.</p>
+</div>
+{% endif %}
+{% endblock %}

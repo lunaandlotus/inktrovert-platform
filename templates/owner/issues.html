@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}Issues — {{ site_name }}{% endblock %}
+{% block content %}
+<div class="section-kicker">Owner desk</div>
+<h1>Issues</h1>
+<p><a href="{{ url_for('owner.issue_new') }}" class="btn btn-sm btn-gold">New issue</a></p>
+{% if issue_rows %}
+<table class="plain">
+  <thead>
+    <tr><th>Number</th><th>Title</th><th>Stories</th><th>Status</th><th></th></tr>
+  </thead>
+  <tbody>
+    {% for i in issue_rows %}
+    <tr>
+      <td>#{{ i.number }}</td>
+      <td><a href="{{ url_for('owner.issue_edit', issue_id=i.id) }}">{{ i.title }}</a></td>
+      <td>{{ i.stories | length }}</td>
+      <td><span class="badge {% if i.is_published %}badge-status-published{% endif %}">{% if i.is_published %}published{% else %}draft{% endif %}</span></td>
+      <td><a href="{{ url_for('owner.issue_edit', issue_id=i.id) }}" class="btn btn-sm">Edit</a></td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<p class="empty">No issues yet. <a href="{{ url_for('owner.issue_new') }}">Start issue one</a>.</p>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block title %}Add your listing — {{ site_name }}{% endblock %}
+{% block content %}
+<h1>Add your listing</h1>
+<p class="muted">Not in the directory yet? Put yourself on the map. Your claim goes in for review the moment you submit.</p>
+
+<form method="post" action="{{ url_for('claims.new_listing') }}">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+  <div class="form-row">
+    <div class="form-group">
+      <label for="kind">What is this listing?</label>
+      <select id="kind" name="kind" required>
+        <option value="">Choose one&hellip;</option>
+        {% for kind, label in kind_labels.items() %}
+        <option value="{{ kind }}" {% if form and form.get('kind') == kind %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="form-group">
+      <label for="display_name">Name</label>
+      <input type="text" id="display_name" name="display_name" required maxlength="200"
+             value="{{ form.get('display_name', '') if form }}" placeholder="Your name, studio, or brand">
+    </div>
+  </div>
+
+  <div class="form-row">
+    <div class="form-group">
+      <label for="city">City</label>
+      <input type="text" id="city" name="city" maxlength="120" value="{{ form.get('city', '') if form }}">
+    </div>
+    <div class="form-group">
+      <label for="state">State</label>
+      <input type="text" id="state" name="state" maxlength="60" value="{{ form.get('state', '') if form }}">
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label for="bio">About</label>
+    <textarea id="bio" name="bio" rows="4" placeholder="A few honest lines about your work.">{{ form.get('bio', '') if form }}</textarea>
+  </div>
+
+  <div class="form-row">
+    <div class="form-group">
+      <label for="specialties">Specialties <span class="muted">(comma-separated)</span></label>
+      <input type="text" id="specialties" name="specialties" value="{{ form.get('specialties', '') if form }}" placeholder="blackwork, fine line, cover-ups">
+    </div>
+    <div class="form-group">
+      <label for="services">Services <span class="muted">(comma-separated)</span></label>
+      <input type="text" id="services" name="services" value="{{ form.get('services', '') if form }}" placeholder="tattoos, piercings, jewelry">
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label for="claimer_relationship">How are you connected to this listing?</label>
+    <select id="claimer_relationship" name="claimer_relationship" required>
+      <option value="">Choose one&hellip;</option>
+      {% for value, label in relationship_choices %}
+      <option value="{{ value }}" {% if form and form.get('claimer_relationship') == value %}selected{% endif %}>{{ label }}</option>
+      {% endfor %}
+    </select>
+  </div>
+
+  <div class="form-group">
+    <label for="evidence_text">Proof it's yours <span class="muted">(optional)</span></label>
+    <textarea id="evidence_text" name="evidence_text" rows="3"
+              placeholder="Anything that backs the claim: your site, a social profile, a shop address&hellip;">{{ form.get('evidence_text', '') if form }}</textarea>
+  </div>
+
+  <button class="btn btn-gold" type="submit">Create listing &amp; file claim</button>
+  <a class="btn" href="{{ url_for('claims.start') }}">Cancel</a>
+</form>
+{% endblock %}

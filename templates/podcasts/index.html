@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block title %}Podcasts — {{ site_name }}{% endblock %}
+
+{% block content %}
+<section class="hero">
+  <p class="section-kicker" style="color: var(--gold);">The magazine, out loud</p>
+  <h1>Conversations worth hearing</h1>
+  <p>Artist stories and interviews for the curious, plus industry talk and
+  continuing education for working pros. New episodes drop here first — press
+  play and listen in.</p>
+</section>
+
+{% if previews %}
+  {% for preview in previews %}
+    {% set series = preview.series %}
+    <section style="margin-top: 28px;">
+      <p class="section-kicker">{{ audience_label(series.audience) }} series</p>
+      <h2 style="margin-top: 0;">
+        <a href="{{ url_for('podcasts.series_detail', series_slug=series.slug) }}"
+           style="text-decoration: none;">{{ series.title }}</a>
+      </h2>
+      {% if series.description %}
+        <p>{{ series.description }}</p>
+      {% endif %}
+
+      {% if preview.episodes %}
+        <div class="grid">
+          {% for episode in preview.episodes %}
+            <article class="card">
+              <p class="meta"><span class="episode-no">Episode {{ episode.episode_number }}</span></p>
+              <h3>
+                <a href="{{ url_for('podcasts.episode_detail', series_slug=series.slug, episode_slug=episode.slug) }}">{{ episode.title }}</a>
+              </h3>
+              {% if episode.description %}
+                <p class="byline">{{ episode.description|striptags|truncate(140) }}</p>
+              {% endif %}
+              <p class="meta">
+                {% if episode.duration_seconds %}{{ episode.duration_seconds|duration }} · {% endif %}
+                <a href="{{ url_for('podcasts.episode_detail', series_slug=series.slug, episode_slug=episode.slug) }}">{% if audio_url(episode) %}Listen{% else %}Show notes{% endif %}</a>
+              </p>
+            </article>
+          {% endfor %}
+        </div>
+        <p><a class="btn" href="{{ url_for('podcasts.series_detail', series_slug=series.slug) }}">All {{ series.title }} episodes</a></p>
+      {% else %}
+        <p class="empty">First episodes are on their way — check back soon.</p>
+      {% endif %}
+    </section>
+  {% endfor %}
+{% else %}
+  <p class="empty">Nothing here yet — the first episodes are on their way.</p>
+{% endif %}
+{% endblock %}

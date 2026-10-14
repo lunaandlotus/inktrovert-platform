@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}Podcasts — {{ site_name }}{% endblock %}
+{% block content %}
+<div class="section-kicker">Owner desk</div>
+<h1>Podcasts</h1>
+<p><a href="{{ url_for('owner.series_new') }}" class="btn btn-sm btn-gold">New series</a></p>
+
+{% if series_rows %}
+{% for s in series_rows %}
+<div class="card">
+  <h2>{{ s.title }} <span class="badge">{{ s.audience }}</span> {% if not s.is_active %}<span class="badge">inactive</span>{% endif %}</h2>
+  {% if s.description %}<p>{{ s.description }}</p>{% endif %}
+  <p>
+    <a href="{{ url_for('owner.series_edit', series_id=s.id) }}" class="btn btn-sm">Edit series</a>
+    <a href="{{ url_for('owner.episode_new', series_id=s.id) }}" class="btn btn-sm btn-gold">New episode</a>
+  </p>
+  {% if s.episodes %}
+  <table class="plain">
+    <thead>
+      <tr><th>#</th><th>Title</th><th>Status</th><th></th></tr>
+    </thead>
+    <tbody>
+      {% for ep in s.episodes %}
+      <tr>
+        <td>{{ ep.episode_number }}</td>
+        <td><a href="{{ url_for('owner.episode_edit', episode_id=ep.id) }}">{{ ep.title }}</a></td>
+        <td><span class="badge {% if ep.is_published %}badge-status-published{% endif %}">{% if ep.is_published %}published{% else %}draft{% endif %}</span></td>
+        <td><a href="{{ url_for('owner.episode_edit', episode_id=ep.id) }}" class="btn btn-sm">Edit</a></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p class="empty">No episodes yet.</p>
+  {% endif %}
+</div>
+{% endfor %}
+{% else %}
+<p class="empty">No podcast series yet. <a href="{{ url_for('owner.series_new') }}">Start the first one</a>.</p>
+{% endif %}
+{% endblock %}

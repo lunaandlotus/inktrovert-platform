@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Support the magazine{% endblock %}
+{% block content %}
+<section class="hero">
+  <span class="section-kicker">Support the magazine</span>
+  <h1>Keep Inktrovert independent.</h1>
+  <p class="muted">Inktrovert is a magazine for the tattoo and body piercing world — written for collectors and the people behind the needle. It runs on readers, not advertisers. There are three ways to keep it going, and every one of them matters.</p>
+</section>
+
+<div class="grid">
+  <article class="card">
+    <span class="section-kicker">Subscribe</span>
+    <h2>Memberships with exclusives</h2>
+    <p class="muted">Subscribe and get subscriber-only extras: early access to stories, behind-the-chair content, subscriber flash drops, digital issues, event presales. Steady money, steady magazine.</p>
+    <a class="btn btn-gold" href="{{ url_for('support.subscribe') }}">See memberships</a>
+  </article>
+  <article class="card">
+    <span class="section-kicker">Donate</span>
+    <h2>One-time gifts</h2>
+    <p class="muted">Not a subscriber? A one-time donation still keeps the lights on — it goes straight into paying writers, photographers, and keeping the magazine free for readers.</p>
+    <a class="btn btn-gold" href="{{ url_for('support.donate') }}">How donations work</a>
+  </article>
+  <article class="card">
+    <span class="section-kicker">Fundraise</span>
+    <h2>Drives with goals</h2>
+    <p class="muted">Now and then we run a fundraising drive for something specific — a print issue, a shoot, new equipment for the podcast studio. Watch the goal, watch it get funded.</p>
+    <a class="btn btn-gold" href="{{ url_for('support.fundraise') }}">See current drives</a>
+  </article>
+</div>
+
+<p class="muted">One honest note: we haven't chosen our payment rails yet, so nothing here takes your money today. Each page says exactly where things stand.</p>
+{% endblock %}

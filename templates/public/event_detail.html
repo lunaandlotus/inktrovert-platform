@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block title %}{{ event.title }} — Inktrovert{% endblock %}
+
+{% block content %}
+<p><a href="{{ url_for('public.events') }}">&larr; All events</a></p>
+
+<article>
+  <h1>{{ event.title }}</h1>
+  <p class="byline">
+    {% if event.starts_at %}{{ event.starts_at.strftime('%A, %B %d, %Y') }}{% if event.ends_at and event.ends_at.date() != event.starts_at.date() %} — {{ event.ends_at.strftime('%B %d, %Y') }}{% endif %}{% endif %}
+  </p>
+  {% if event.venue_name or event.city %}
+  <p>
+    {% if event.venue_name %}<strong>{{ event.venue_name }}</strong><br>{% endif %}
+    {% if event.city %}{{ event.city }}{% if event.state %}, {{ event.state }}{% endif %}{% endif %}
+  </p>
+  {% endif %}
+  {% if event.description %}<div class="article-body">{{ event.description|safe }}</div>{% endif %}
+  {% if event.url %}<p><a class="btn btn-gold" href="{{ event.url }}" rel="noopener" target="_blank">Event website</a></p>{% endif %}
+</article>
+{% endblock %}

@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block title %}About — Inktrovert{% endblock %}
+
+{% block content %}
+<h1>What is Inktrovert?</h1>
+
+<p class="excerpt">A magazine for the business and the customer — one place for the tattoo and body piercing world.</p>
+
+<div class="article-body">
+  <h2>The magazine</h2>
+  <p>Inktrovert is a digital magazine covering the tattoo and piercing industry: artist spotlights,
+     shop stories, convention news, new products, and the work collectors are actually getting done.
+     Issues land on a regular rhythm, and every back issue stays readable forever.</p>
+
+  <h2>The directory</h2>
+  <p>Find tattoo artists, piercers, studios, and trusted brands. Artists and shops can claim their
+     listings, show their portfolios and flash, and keep their details current — so the listing you
+     find is the shop that actually exists. Verified badges mark the ones who've confirmed they're
+     the real deal.</p>
+
+  <h2>The pro network</h2>
+  <p>Industry pros get a professional home here: podcasts on craft and business, continuing education
+     content, a supply marketplace for pro-to-pro gear, and — coming soon — tools that make booking
+     through the platform possible.</p>
+
+  <h2>Why it exists</h2>
+  <p>Collectors want to find great artists. Artists want to be found by the right clients. Shops want
+     to be seen for what they really are. Inktrovert puts all of that in one place instead of scattered
+     across a dozen apps that don't understand the industry.</p>
+
+  <p><a class="btn btn-gold" href="{{ url_for('account.register') }}">Join free</a>
+     {% if directory_browse_enabled %}<a class="btn" href="{{ url_for('directory.browse') }}">Find artists &amp; shops</a>{% endif %}</p>
+</div>
+{% endblock %}

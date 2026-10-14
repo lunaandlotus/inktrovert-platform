@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% block title %}{% if q %}Search: {{ q }}{% else %}Search{% endif %} — Inktrovert{% endblock %}
+
+{% block content %}
+<h1>Search the magazine</h1>
+
+<form method="get" action="{{ url_for('public.search') }}" class="form">
+  <div class="form-group">
+    <label for="q">Articles, issues, episodes, events — and the directory</label>
+    <input type="text" id="q" name="q" value="{{ q }}" placeholder="An artist, a city, a specialty, a story…" maxlength="120">
+    <input type="hidden" name="scope" value="{{ scope }}">
+  </div>
+  <button type="submit" class="btn btn-dark">Search</button>
+</form>
+
+{% if q %}
+<div class="filters">
+  <a class="badge{% if scope == 'all' %} badge-verified{% endif %}" href="{{ url_for('public.search', q=q, scope='all') }}">All</a>
+  <a class="badge{% if scope == 'magazine' %} badge-verified{% endif %}" href="{{ url_for('public.search', q=q, scope='magazine') }}">Magazine</a>
+  <a class="badge{% if scope == 'directory' %} badge-verified{% endif %}" href="{{ url_for('public.search', q=q, scope='directory') }}">Directory</a>
+</div>
+
+{% if scope in ('all', 'magazine') %}
+<section>
+  <h2>From the magazine</h2>
+  {% if results %}
+  <div class="grid">
+    {% for r in results %}
+    <article class="card">
+      <span class="badge">{{ r.label }}</span>
+      <h3><a href="{{ r.url }}">{{ r.title }}</a></h3>
+      {% if r.blurb %}<p>{{ r.blurb[:160] }}{% if r.blurb|length > 160 %}…{% endif %}</p>{% endif %}
+      <p class="meta">{% if r.date %}{{ r.date.strftime('%b %d, %Y') }}{% endif %}</p>
+    </article>
+    {% endfor %}
+  </div>
+  {% else %}
+  <p class="empty">Nothing in the magazine matched “{{ q }}”.</p>
+  {% endif %}
+</section>
+{% endif %}
+
+{% if scope in ('all', 'directory') %}
+<section>
+  <h2>From the directory</h2>
+  {% if profiles %}
+  <div class="grid">
+    {% for profile in profiles %}
+    <article class="card">
+      <h3>{% if directory_enabled %}<a href="{{ url_for('directory.profile_detail', slug=profile.slug) }}">{{ profile.display_name }}</a>{% else %}{{ profile.display_name }}{% endif %}
+        {% if profile.verified %}<span class="badge badge-verified">Verified</span>{% endif %}</h3>
+      <p class="meta">{{ profile.kind|replace('_', ' ')|title }}{% if profile.city %} · {{ profile.city }}{% if profile.state %}, {{ profile.state }}{% endif %}{% endif %}</p>
+    </article>
+    {% endfor %}
+  </div>
+  {% else %}
+  <p class="empty">No listings matched “{{ q }}”.</p>
+  {% endif %}
+</section>
+{% endif %}
+{% endif %}
+{% endblock %}

@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}Claim status — {{ site_name }}{% endblock %}
+{% block content %}
+<h1>Claim status</h1>
+
+<p>
+  <span class="badge badge-status-{{ claim.status }}">{{ status_labels.get(claim.status, claim.status) }}</span>
+</p>
+
+<table class="plain">
+  <tbody>
+    <tr><th>Listing</th>
+      <td>
+        {% if claim.profile %}
+        <a href="{{ url_for('directory.profile_detail', slug=claim.profile.slug) }}">{{ claim.profile.display_name }}</a>
+        {% else %}Listing removed{% endif %}
+      </td>
+    </tr>
+    <tr><th>Your role</th><td>{{ relationship_labels.get(claim.claimer_relationship, claim.claimer_relationship) }}</td></tr>
+    <tr><th>Filed</th><td>{{ claim.created_at.strftime("%b %d, %Y") if claim.created_at }}</td></tr>
+    {% if claim.decided_at %}
+    <tr><th>Decided</th><td>{{ claim.decided_at.strftime("%b %d, %Y") }}</td></tr>
+    {% endif %}
+  </tbody>
+</table>
+
+{% if claim.reviewer_note %}
+<h2>Note from the review team</h2>
+<p>{{ claim.reviewer_note }}</p>
+{% elif claim.status == "pending" %}
+<p class="muted">Still in the queue — we review every claim by hand and you'll see the decision here.</p>
+{% endif %}
+
+<p><a href="{{ url_for('claims.index') }}">&larr; Back to your claims</a></p>
+{% endblock %}

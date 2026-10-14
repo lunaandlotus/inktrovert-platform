@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block title %}{{ episode.title }} — {{ series.title }} — {{ site_name }}{% endblock %}
+
+{% block content %}
+<p class="meta">
+  <a href="{{ url_for('podcasts.index') }}">Podcasts</a> &rsaquo;
+  <a href="{{ url_for('podcasts.series_detail', series_slug=series.slug) }}">{{ series.title }}</a>
+</p>
+
+<p class="section-kicker">{{ series.title }}</p>
+<h1 style="margin-top: 0;">{{ episode.title }}</h1>
+<p class="byline">
+  Episode {{ episode.episode_number }}
+  {% if episode.duration_seconds %} · {{ episode.duration_seconds|duration }}{% endif %}
+  {% if episode.published_at %} · {{ episode.published_at.strftime('%B %d, %Y') }}{% endif %}
+  <span class="badge">{{ audience_label(series.audience) }}</span>
+</p>
+
+<div class="audio-player">
+  <p class="episode-no">Episode {{ episode.episode_number }} — {{ series.title }}</p>
+  {% set src = audio_url(episode) %}
+  {% if src %}
+    <audio controls preload="metadata" src="{{ src }}">
+      Your browser doesn't support audio playback — check back soon.
+    </audio>
+  {% else %}
+    <p style="color: #fff; margin: 8px 0 0;">Audio coming soon.</p>
+  {% endif %}
+</div>
+
+{% if episode.description %}
+  <h2>Show notes</h2>
+  {% for paragraph in episode.description.split('\n\n') %}
+    {% if paragraph.strip() %}
+      <p>{{ paragraph|trim }}</p>
+    {% endif %}
+  {% endfor %}
+{% endif %}
+
+{% if episode.related_story or episode.related_profile %}
+  <h2>Keep exploring</h2>
+  <p class="meta">
+    {% if episode.related_story %}
+      <a href="{{ url_for('public.story_detail', slug=episode.related_story.slug) }}">Read the story: {{ episode.related_story.title }}</a>
+    {% endif %}
+    {% if episode.related_story and episode.related_profile %}<br>{% endif %}
+    {% if episode.related_profile %}
+      <a href="{{ url_for('directory.profile_detail', slug=episode.related_profile.slug) }}">View the profile: {{ episode.related_profile.name }}</a>
+    {% endif %}
+  </p>
+{% endif %}
+{% endblock %}

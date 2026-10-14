@@ -1,0 +1,96 @@
+{# Standalone print edition document for an issue.
+   Served in the browser as the print-optimized view (with a Print / Save as
+   PDF toolbar button) and rendered server-side by WeasyPrint for the PDF
+   export. Kept deliberately separate from the screen layout. #}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Inktrovert — Issue #{{ issue.number }}: {{ issue.title }} (print edition)</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/print.css') }}">
+</head>
+<body class="print-doc">
+
+<div class="print-toolbar">
+  <span><strong>Inktrovert</strong> — Issue #{{ issue.number }} print edition</span>
+  <span style="margin-left:auto;display:flex;gap:10px">
+    <button type="button" class="btn btn-gold btn-sm" onclick="window.print()">Print / Save as PDF</button>
+    <a class="btn btn-sm" style="color:#fff;border-color:#fff" href="{{ url_for('public.issue_print_pdf', slug=issue.slug) }}">Download PDF</a>
+    <a class="btn btn-sm" style="color:#fff;border-color:#fff" href="{{ url_for('public.issue_detail', slug=issue.slug) }}">Back to issue</a>
+  </span>
+</div>
+
+<!-- Cover page -->
+<section class="print-cover">
+  {% if issue.cover_image %}
+  <div class="print-cover-art" style="background-image:url('{{ issue.cover_image }}')"></div>
+  {% endif %}
+  <div class="print-cover-text">
+    <p class="print-brand">Inktrovert</p>
+    <p class="print-brand-sub">Tattoo and Body Piercing Professionals Collective</p>
+    <h1>Issue #{{ issue.number }}</h1>
+    <h2>{{ issue.title }}</h2>
+    {% if issue.published_at %}<p class="print-date">{{ issue.published_at.strftime('%B %Y') }}</p>{% endif %}
+  </div>
+</section>
+
+<!-- Table of contents, with page numbers (CSS target-counter in the PDF) -->
+<section class="print-toc">
+  <h2>Inside this issue</h2>
+  {% if stories %}
+  <ol>
+    {% for story in stories %}
+    <li>
+      <a class="toc-title toc-page" href="#story-{{ story.id }}">{{ story.title }}</a>
+      <span class="toc-meta">{{ story.category.replace('-', ' ')|title }}{% if story.author_name %} — {{ story.author_name }}{% endif %}</span>
+    </li>
+    {% endfor %}
+    {% if upcoming_events %}
+    <li>
+      <a class="toc-title toc-page" href="#print-events">Coming up: events calendar</a>
+      <span class="toc-meta">{{ upcoming_events|length }} event{{ 's' if upcoming_events|length != 1 }}</span>
+    </li>
+    {% endif %}
+  </ol>
+  {% else %}
+  <p>Articles for this edition are still being set in type.</p>
+  {% endif %}
+</section>
+
+<!-- Articles, each starting on a fresh page -->
+{% for story in stories %}
+<article class="print-article" id="story-{{ story.id }}">
+  <p class="print-kicker">{{ story.category.replace('-', ' ')|title }}</p>
+  <h1>{{ story.title }}</h1>
+  {% if story.author_name %}<p class="byline">By {{ story.author_name }}</p>{% endif %}
+  {% if story.cover_image %}<img class="print-art" src="{{ story.cover_image }}" alt="">{% endif %}
+  {% if story.excerpt %}<p class="print-dek">{{ story.excerpt }}</p>{% endif %}
+  <div class="print-body">{{ story.body|safe }}</div>
+</article>
+{% endfor %}
+
+<!-- Date-driven content: the full events calendar, so the print edition
+     stands alone as the complete issue -->
+{% if upcoming_events %}
+<section class="print-events" id="print-events">
+  <h2>Coming up</h2>
+  <p class="print-events-intro">Conventions, expos, and shop nights — dates worth circling.</p>
+  {% for event in upcoming_events %}
+  <div class="print-event">
+    <p class="print-event-date">{% if event.starts_at %}{{ event.starts_at.strftime('%A, %B %d, %Y') }}{% endif %}</p>
+    <h3>{{ event.title }}</h3>
+    <p class="print-event-where">{% if event.venue_name %}{{ event.venue_name }}{% endif %}{% if event.city %}{% if event.venue_name %} · {% endif %}{{ event.city }}{% if event.state %}, {{ event.state }}{% endif %}{% endif %}</p>
+    {% if event.description %}<p class="print-event-desc">{{ event.description }}</p>{% endif %}
+    {% if event.url %}<p class="print-event-url">{{ event.url }}</p>{% endif %}
+  </div>
+  {% endfor %}
+</section>
+{% endif %}
+
+<section class="print-backmatter">
+  <p><strong>Inktrovert</strong> — a magazine for the business and the customer.<br>
+  Tattoo and Body Piercing Professionals Collective</p>
+</section>
+
+</body>
+</html>

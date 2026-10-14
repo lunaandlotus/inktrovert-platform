@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}Newsletter — {{ site_name }}{% endblock %}
+{% block content %}
+<div class="section-kicker">Owner desk</div>
+<h1>Newsletter</h1>
+<p class="muted">Editions live here as an archive. Sending goes through your email flow, not this page.</p>
+<p><a href="{{ url_for('owner.newsletter_new') }}" class="btn btn-sm btn-gold">New edition</a></p>
+
+{% if editions %}
+<table class="plain">
+  <thead>
+    <tr><th>Subject</th><th>Sent</th><th>Status</th><th></th></tr>
+  </thead>
+  <tbody>
+    {% for e in editions %}
+    <tr>
+      <td><a href="{{ url_for('owner.newsletter_edit', edition_id=e.id) }}">{{ e.subject }}</a><br><span class="muted">{{ e.summary[:120] }}{% if e.summary|length > 120 %}…{% endif %}</span></td>
+      <td class="muted">{{ e.sent_at.strftime("%b %d, %Y") if e.sent_at else "not sent" }}</td>
+      <td><span class="badge {% if e.is_archived %}badge-status-published{% endif %}">{% if e.is_archived %}archived{% else %}draft{% endif %}</span></td>
+      <td><a href="{{ url_for('owner.newsletter_edit', edition_id=e.id) }}" class="btn btn-sm">Edit</a></td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<p class="empty">No editions yet. <a href="{{ url_for('owner.newsletter_new') }}">Draft the first one</a>.</p>
+{% endif %}
+{% endblock %}

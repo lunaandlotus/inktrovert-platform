@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block title %}Stories — Inktrovert{% endblock %}
+
+{% block content %}
+<h1>Stories</h1>
+
+<div class="filters">
+  <a class="badge{% if not active_category %} badge-verified{% endif %}" href="{{ url_for('public.stories') }}">All</a>
+  {% for cat in categories %}
+  <a class="badge{% if active_category == cat %} badge-verified{% endif %}" href="{{ url_for('public.stories', category=cat) }}">{{ category_label(cat) }}</a>
+  {% endfor %}
+</div>
+
+{% if stories %}
+<div class="grid">
+  {% for story in stories %}
+  <article class="card">
+    {% if story.cover_image %}<img src="{{ story.cover_image }}" alt="" class="card-cover">{% endif %}
+    <span class="badge">{{ category_label(story.category) }}</span>
+    <h3><a href="{{ url_for('public.story_detail', slug=story.slug) }}">{{ story.title }}</a></h3>
+    {% if story.excerpt %}<p class="excerpt">{{ story.excerpt }}</p>{% endif %}
+    <p class="meta">{{ story.author_name }}{% if story.published_at %} · {{ story.published_at.strftime('%b %d, %Y') }}{% endif %}</p>
+  </article>
+  {% endfor %}
+</div>
+{% else %}
+<p class="empty">Nothing filed under this section yet.</p>
+{% endif %}
+{% endblock %}
