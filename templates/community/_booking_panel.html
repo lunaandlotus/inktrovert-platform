@@ -1,0 +1,22 @@
+{# Booking panel for a directory profile page. Include with a `profile` in
+   context. Three paths:
+     a. "Send an inquiry"  — always available, lands in the pro's inbox.
+     b. "Request booking"  — only when the pro switched platform booking on
+        (Profile.booking_mode == "platform", mirrored by the community
+        booking-settings toggle).
+     c. "Book on their site" — when the profile has an external booking URL. #}
+<section>
+  <h2>Booking</h2>
+  <p>
+    <a class="btn" href="{{ url_for('community.inquire', slug=profile.slug) }}">Send an inquiry</a>
+    {% if profile.booking_mode == "platform" %}
+    <a class="btn btn-gold" href="{{ url_for('community.book', slug=profile.slug) }}">Request booking</a>
+    {% endif %}
+    {% if profile.booking_url %}
+    <a class="btn" href="{{ profile.booking_url }}" target="_blank" rel="noopener">Book on their site</a>
+    {% endif %}
+  </p>
+  {% if not profile.booking_url and profile.booking_mode != "platform" %}
+  <p class="muted">No online booking on file — an inquiry is the fastest way in.</p>
+  {% endif %}
+</section>

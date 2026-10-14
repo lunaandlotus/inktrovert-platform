@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}Your cart — Supply marketplace{% endblock %}
+{% block content %}
+<p class="section-kicker"><a href="{{ url_for('market.index') }}">Supply marketplace</a></p>
+<h1>Your cart</h1>
+
+{% if lines %}
+<table class="plain">
+  <thead>
+    <tr><th>Product</th><th>Qty</th><th>Price</th><th>Line total</th><th></th></tr>
+  </thead>
+  <tbody>
+    {% for listing, detail, qty in lines %}
+    <tr>
+      <td><a href="{{ url_for('market.product_detail', listing_id=listing.id) }}">{{ listing.title }}</a>
+        <br><span class="muted" style="font-size:12px;">{{ listing.category | category_label }}</span></td>
+      <td>{{ qty }}</td>
+      <td>{{ listing.price_cents | dollars }}</td>
+      <td>{{ (listing.price_cents * qty) | dollars }}</td>
+      <td>
+        <form method="post" action="{{ url_for('market.cart_remove', listing_id=listing.id) }}" style="display:inline;">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button class="btn btn-sm btn-danger" type="submit">Remove</button>
+        </form>
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+<p style="font-size:18px; margin-top:14px;"><strong>Total: {{ total_cents | dollars }}</strong></p>
+<p>
+  <a class="btn btn-gold" href="{{ url_for('market.checkout') }}">Checkout</a>
+  <form method="post" action="{{ url_for('market.cart_clear') }}" style="display:inline; margin-left:8px;">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <button class="btn btn-sm" type="submit">Clear cart</button>
+  </form>
+</p>
+{% else %}
+<p class="muted">Your cart is empty. <a href="{{ url_for('market.index') }}">Browse the marketplace</a> to find supplies.</p>
+{% endif %}
+{% endblock %}

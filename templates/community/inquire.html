@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Message {{ profile.display_name }} — {{ site_name }}{% endblock %}
+{% block content %}
+<p><a href="{{ url_for('directory.profile_detail', slug=profile.slug) }}">&larr; Back to {{ profile.display_name }}</a></p>
+<h1>Message {{ profile.display_name }}</h1>
+<p class="muted">Ask a question, check availability, talk through an idea. They'll reply right here on Inktrovert.</p>
+
+<form class="styled" method="post" action="{{ url_for('community.inquire', slug=profile.slug) }}">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <div class="form-group">
+    <label for="message">Your message</label>
+    <textarea id="message" name="message" required></textarea>
+    <p class="hint">Include the details that help them answer — what you want, roughly when, any reference ideas.</p>
+  </div>
+  <button class="btn btn-gold" type="submit">Send message</button>
+</form>
+{% endblock %}

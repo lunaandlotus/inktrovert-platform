@@ -28,5 +28,9 @@
   </article>
 </div>
 
+{% if billing_live and billing_live() %}
+<p class="muted">One honest note: payments are live now — each page above takes you straight to secure checkout.</p>
+{% else %}
 <p class="muted">One honest note: we haven't chosen our payment rails yet, so nothing here takes your money today. Each page says exactly where things stand.</p>
+{% endif %}
 {% endblock %}

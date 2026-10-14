@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}Billing admin — {{ site_name }}{% endblock %}
+{% block content %}
+<div class="section-kicker">Owner desk · Billing</div>
+<h1>Money, managed.</h1>
+<p class="muted">Subscriptions, donations, and fundraising drives — everything editable, right here.</p>
+{% if not live %}
+<div class="alert alert-info"><strong>Payment rails aren't connected yet.</strong> You can set up every tier and drive now; nothing charges anyone until Stripe keys are connected.</div>
+{% endif %}
+
+<div class="grid">
+  <article class="card">
+    <span class="section-kicker">Drives</span>
+    <h2>Fundraising campaigns</h2>
+    <p class="muted">{{ campaign_count }} drive{{ "s" if campaign_count != 1 }}. Goals, dates, status, supporter lists — all editable.</p>
+    <p><a class="btn btn-gold" href="{{ url_for('billing.admin_campaigns') }}">Manage drives</a></p>
+  </article>
+  <article class="card">
+    <span class="section-kicker">Memberships</span>
+    <h2>Subscription tiers</h2>
+    <p class="muted">{{ tier_count }} tier{{ "s" if tier_count != 1 }}. Names, prices, perks, audiences — all editable.</p>
+    <p><a class="btn btn-gold" href="{{ url_for('billing.admin_tiers') }}">Manage tiers</a></p>
+  </article>
+  <article class="card">
+    <span class="section-kicker">Gifts</span>
+    <h2>Contributions</h2>
+    <p class="muted">{{ contribution_count }} recorded. Read-only list, with refunds when rails are live.</p>
+    <p><a class="btn btn-gold" href="{{ url_for('billing.admin_contributions') }}">View contributions</a></p>
+  </article>
+</div>
+
+<p><a class="btn" href="{{ url_for('owner.dashboard') }}">&larr; Owner dashboard</a></p>
+{% endblock %}

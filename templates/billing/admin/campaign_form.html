@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block title %}{% if is_new %}New drive{% else %}Edit drive{% endif %} — billing admin{% endblock %}
+{% block content %}
+<div class="section-kicker">Owner desk · Billing</div>
+<p><a href="{{ url_for('billing.admin_campaigns') }}">&larr; Back to drives</a></p>
+<h1>{% if is_new %}New fundraising drive{% else %}Edit “{{ campaign.title }}”{% endif %}</h1>
+
+<form method="post">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <div class="form-group">
+    <label for="title">Title</label>
+    <input type="text" id="title" name="title" value="{{ request.form.get('title', campaign.title or '') }}" maxlength="200" required>
+  </div>
+  <div class="form-group">
+    <label for="slug">Slug</label>
+    <input type="text" id="slug" name="slug" value="{{ request.form.get('slug', campaign.slug or '') }}" maxlength="220">
+    <p class="hint">Left blank, it's made from the title. This is the drive's web address.</p>
+  </div>
+  <div class="form-group">
+    <label for="description">Description</label>
+    <textarea id="description" name="description" rows="5">{{ request.form.get('description', campaign.description or '') }}</textarea>
+    <p class="hint">Plainspoken — say what the money is for.</p>
+  </div>
+  <div class="form-row">
+    <div class="form-group">
+      <label for="goal_dollars">Goal (USD)</label>
+      <input type="text" id="goal_dollars" name="goal_dollars" inputmode="decimal"
+             value="{{ request.form.get('goal_dollars', '%.2f' % (campaign.goal_cents / 100) if campaign.goal_cents else '') }}"
+             placeholder="10000.00">
+      <p class="hint">Leave blank for no goal.</p>
+    </div>
+    <div class="form-group">
+      <label for="status">Status</label>
+      <select id="status" name="status">
+        {% for s in statuses %}
+        <option value="{{ s }}"{% if (request.form.get('status') or campaign.status) == s %} selected{% endif %}>{{ s|title }}</option>
+        {% endfor %}
+      </select>
+      <p class="hint">Only “active” drives collect contributions.</p>
+    </div>
+  </div>
+  <div class="form-row">
+    <div class="form-group">
+      <label for="starts_at">Starts</label>
+      <input type="date" id="starts_at" name="starts_at"
+             value="{{ request.form.get('starts_at', campaign.starts_at.strftime('%Y-%m-%d') if campaign.starts_at else '') }}">
+    </div>
+    <div class="form-group">
+      <label for="ends_at">Ends</label>
+      <input type="date" id="ends_at" name="ends_at"
+             value="{{ request.form.get('ends_at', campaign.ends_at.strftime('%Y-%m-%d') if campaign.ends_at else '') }}">
+    </div>
+  </div>
+  <div class="form-group">
+    <label><input type="checkbox" name="show_supporter_list"{% if request.form.get('show_supporter_list', campaign.show_supporter_list if campaign.id else True) %} checked{% endif %}> Show the public supporter list</label>
+    <p class="hint">Anonymous supporters never appear, either way.</p>
+  </div>
+  <button class="btn btn-gold" type="submit">{% if is_new %}Create drive{% else %}Save changes{% endif %}</button>
+</form>
+{% endblock %}

@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}{{ mode_labels.get(inquiry.mode, inquiry.mode) }} — {{ site_name }}{% endblock %}
+{% block content %}
+<p><a href="{{ url_for('community.inbox') }}">&larr; Back to inbox</a></p>
+<h1>{{ mode_labels.get(inquiry.mode, inquiry.mode) }} <span class="badge">{{ status_labels.get(inquiry.status, inquiry.status) }}</span></h1>
+<p class="muted">
+  {% if profile %}For {{ profile.display_name }} · {% endif %}
+  from {{ display_name(users, inquiry.user_id) }} · {{ inquiry.created_at.strftime("%b %d, %Y %H:%M") if inquiry.created_at }}
+</p>
+
+<div class="card">
+  <p>{{ inquiry.message }}</p>
+</div>
+
+{% for reply in replies %}
+<div class="card">
+  <p class="muted">{{ display_name(users, reply.sender_user_id) }} · {{ reply.created_at.strftime("%b %d, %Y %H:%M") if reply.created_at }}</p>
+  <p>{{ reply.body }}</p>
+</div>
+{% endfor %}
+
+<form class="styled" method="post" action="{{ url_for('community.inbox_thread', inquiry_id=inquiry.id) }}">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <div class="form-group">
+    <label for="body">Your reply</label>
+    <textarea id="body" name="body" required></textarea>
+  </div>
+  <button class="btn btn-gold" type="submit">Send reply</button>
+</form>
+
+<div class="form-row" style="margin-top:14px;">
+  {% if inquiry.mode == "platform" and inquiry.status == "open" %}
+  <form method="post" action="{{ url_for('community.inbox_confirm', inquiry_id=inquiry.id) }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <button class="btn btn-gold btn-sm" type="submit">Confirm booking</button>
+  </form>
+  <form method="post" action="{{ url_for('community.inbox_decline', inquiry_id=inquiry.id) }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <button class="btn btn-danger btn-sm" type="submit">Decline booking</button>
+  </form>
+  {% endif %}
+  {% if inquiry.status not in ("closed", "confirmed", "declined") %}
+  <form method="post" action="{{ url_for('community.inbox_close', inquiry_id=inquiry.id) }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <button class="btn btn-sm" type="submit">Close thread</button>
+  </form>
+  {% endif %}
+</div>
+{% endblock %}

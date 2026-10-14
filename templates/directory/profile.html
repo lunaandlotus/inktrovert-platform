@@ -108,16 +108,8 @@
 </section>
 {% endif %}
 
-<section>
-  <h2>Booking</h2>
-  {% if profile.booking_mode == "external" and profile.booking_url %}
-  <p><a class="btn btn-gold" href="{{ profile.booking_url }}" target="_blank" rel="noopener">Book with them</a></p>
-  {% elif profile.booking_mode == "platform" %}
-  <p class="muted">Platform booking is coming in a later phase.</p>
-  {% else %}
-  <p class="muted">No online booking link on file — reach out directly.</p>
-  {% endif %}
-</section>
+{% include "community/_reviews_section.html" %}
+{% include "community/_booking_panel.html" %}
 
 <section>
   <h2>Contact</h2>

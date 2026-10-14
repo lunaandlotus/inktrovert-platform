@@ -5,6 +5,15 @@
 <h2>Manage: {{ profile.display_name }}</h2>
 <p class="muted">Only you (and the platform team) can change this listing.</p>
 
+<div class="card">
+  <h3>Booking</h3>
+  <form method="post" action="{{ url_for('community.booking_settings', slug=profile.slug) }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <label><input type="checkbox" name="enabled" value="on" {% if profile.booking_mode == "platform" %}checked{% endif %}> Accept booking requests on Inktrovert</label>
+    <button class="btn btn-sm" type="submit">Save</button>
+  </form>
+</div>
+
 {% if profile.kind == "studio" %}
 <div class="card">
   <h3>Studio roster</h3>

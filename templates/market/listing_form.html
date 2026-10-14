@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block title %}{% if mode == "new" %}New listing{% else %}Edit listing{% endif %} — Supply marketplace{% endblock %}
+{% block content %}
+<p class="section-kicker"><a href="{{ url_for('market.dashboard') }}">Seller dashboard</a></p>
+<h1>{% if mode == "new" %}New listing{% else %}Edit listing{% endif %}</h1>
+<p class="muted">New listings start as drafts — nothing goes live until you publish it.</p>
+
+<form method="post" enctype="multipart/form-data"
+      action="{% if mode == 'new' %}{{ url_for('market.listing_new') }}{% else %}{{ url_for('market.listing_edit', listing_id=listing.id) }}{% endif %}">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+  <div class="form-group">
+    <label for="title">Product title</label>
+    <input type="text" id="title" name="title" required maxlength="200"
+           value="{{ values.title }}">
+  </div>
+
+  <div class="form-row">
+    <div class="form-group">
+      <label for="category">Category</label>
+      <select id="category" name="category" required>
+        {% for code, label in categories %}
+        <option value="{{ code }}" {% if values.category == code %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="form-group">
+      <label for="price">Price (USD)</label>
+      <input type="number" id="price" name="price" required min="0.01" step="0.01"
+             value="{{ values.price }}">
+    </div>
+    <div class="form-group">
+      <label for="stock">Stock</label>
+      <input type="number" id="stock" name="stock" min="0" step="1"
+             value="{{ values.stock }}">
+      <span class="hint">Leave blank for made-to-order / unlimited.</span>
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label for="description">Description</label>
+    <textarea id="description" name="description" rows="5"
+              placeholder="What is it, what's in it, who is it for…">{{ values.description }}</textarea>
+  </div>
+
+  {% if brands %}
+  <div class="form-group">
+    <label for="seller_profile_id">Sell under brand profile (optional)</label>
+    <select id="seller_profile_id" name="seller_profile_id">
+      <option value="">Just my account</option>
+      {% for p in brands %}
+      <option value="{{ p.id }}" {% if values.seller_profile_id == p.id|string %}selected{% endif %}>{{ p.display_name }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  {% endif %}
+
+  <div class="form-group">
+    <label for="image">Product photo</label>
+    {% if mode == 'edit' and detail and detail.image %}
+    <p><img src="{{ url_for('uploaded_file', filename=detail.image) }}" alt="" style="max-width:220px; border-radius:4px; border:1px solid var(--line);"></p>
+    {% endif %}
+    <input type="file" id="image" name="image" accept="image/png,image/jpeg,image/webp,image/gif">
+    <span class="hint">PNG, JPG, WEBP, or GIF. Leave empty to keep the current photo.</span>
+  </div>
+
+  <button class="btn btn-gold" type="submit">
+    {% if mode == "new" %}Save as draft{% else %}Save changes{% endif %}
+  </button>
+  <a class="btn" href="{{ url_for('market.dashboard') }}" style="margin-left:8px;">Cancel</a>
+</form>
+{% endblock %}

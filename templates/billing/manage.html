@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}My memberships — support the magazine{% endblock %}
+{% block content %}
+<section class="hero">
+  <span class="section-kicker">My memberships</span>
+  <h1>Your subscriptions.</h1>
+</section>
+
+{% if message %}<p class="notice">{{ message }}</p>{% endif %}
+
+{% if subscriptions %}
+<div class="grid">
+  {% for sub in subscriptions %}
+  <article class="card">
+    <span class="section-kicker">{{ sub.tier.name }}</span>
+    <p class="muted">{{ sub.tier.description|truncate(140) }}</p>
+    <p><strong>Status:</strong> {{ sub.status }}</p>
+    {% if sub.tier.price_cents is not none %}
+    <p class="muted">${{ "%.2f"|format(sub.tier.price_cents / 100) }}/month</p>
+    {% endif %}
+    {% if sub.status in ("active", "trialing", "past_due") %}
+    <form method="post" action="{{ url_for('billing.manage') }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <input type="hidden" name="subscription_id" value="{{ sub.id }}">
+      <button class="btn" type="submit">Cancel subscription</button>
+    </form>
+    <p class="muted">Canceling stops future charges. You keep access until the end of the current billing period.</p>
+    {% endif %}
+  </article>
+  {% endfor %}
+</div>
+{% else %}
+<p class="empty">No subscriptions on this account yet. <a href="{{ url_for('support.subscribe') }}">See the memberships</a>.</p>
+{% endif %}
+{% endblock %}

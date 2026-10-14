@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Review moderation — {{ site_name }}{% endblock %}
+{% block content %}
+<div class="section-kicker">Owner desk</div>
+<h1>Review moderation</h1>
+<p class="muted">Approve to publish, hide to pull a review off the public page without deleting it. Nothing here goes public until you say so.</p>
+
+<div class="filters">
+  {% for s in statuses %}
+  <a href="{{ url_for('community.admin_reviews', status=s) }}" class="btn btn-sm{% if s == status %} btn-gold{% endif %}">{{ s }} ({{ counts.get(s, 0) }})</a>
+  {% endfor %}
+</div>
+
+{% if reviews %}
+<table class="plain">
+  <thead>
+    <tr><th>Profile</th><th>Rating</th><th>Review</th><th>By</th><th>Written</th><th></th></tr>
+  </thead>
+  <tbody>
+    {% for review in reviews %}
+    {% set profile = profiles.get(review.profile_id) %}
+    <tr>
+      <td>{% if profile %}<a href="{{ url_for('directory.profile_detail', slug=profile.slug) }}">{{ profile.display_name }}</a>{% else %}—{% endif %}</td>
+      <td><strong>{{ review.rating }}/5</strong></td>
+      <td class="lead-row">{{ review.body[:140] }}{% if review.body|length > 140 %}…{% endif %}</td>
+      <td>{{ display_name(users, review.user_id) }}</td>
+      <td class="muted">{{ review.created_at.strftime("%b %d, %Y") if review.created_at }}</td>
+      <td><a href="{{ url_for('community.admin_review_detail', review_id=review.id) }}" class="btn btn-sm">Open</a></td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<p class="empty">No reviews with this status.</p>
+{% endif %}
+{% endblock %}

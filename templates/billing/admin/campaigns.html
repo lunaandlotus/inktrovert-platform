@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}Fundraising drives — billing admin{% endblock %}
+{% block content %}
+<div class="section-kicker">Owner desk · Billing</div>
+<p><a href="{{ url_for('billing.admin_index') }}">&larr; Billing admin</a></p>
+<h1>Fundraising drives</h1>
+<p><a class="btn btn-gold" href="{{ url_for('billing.admin_campaign_new') }}">New drive</a></p>
+
+{% if campaigns %}
+<table class="plain">
+  <thead>
+    <tr><th>Title</th><th>Goal</th><th>Raised</th><th>Status</th><th></th></tr>
+  </thead>
+  <tbody>
+    {% for c in campaigns %}
+    <tr>
+      <td><strong>{{ c.title }}</strong><br><span class="muted">{{ c.slug }}</span></td>
+      <td class="muted">{{ "$%.2f" | format(c.goal_cents / 100) if c.goal_cents else "—" }}</td>
+      <td>
+        {% if c.goal_cents %}
+        {% set pct = ((c.raised_cents / c.goal_cents * 100)|round|int if c.raised_cents else 0) %}
+        <div class="progress"><span style="width: {{ pct }}%"></span></div>
+        {% endif %}
+        <span class="muted">{{ "$%.2f" | format(c.raised_cents / 100) }}{% if c.goal_cents %} of {{ "$%.2f" | format(c.goal_cents / 100) }}{% endif %}</span>
+      </td>
+      <td><span class="badge {% if c.status == 'active' %}badge-status-published{% elif c.status == 'ended' %}badge-status-rejected{% endif %}">{{ c.status }}</span></td>
+      <td>
+        <a class="btn" href="{{ url_for('billing.admin_campaign_edit', campaign_id=c.id) }}">Edit</a>
+        <form method="post" action="{{ url_for('billing.admin_campaign_delete', campaign_id=c.id) }}" style="display:inline" onsubmit="return confirm('Delete this drive?');">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button class="btn" type="submit">Delete</button>
+        </form>
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<p class="empty">No drives yet. Start one with “New drive”.</p>
+{% endif %}
+{% endblock %}

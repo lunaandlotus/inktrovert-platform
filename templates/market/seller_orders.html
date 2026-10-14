@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}Orders to fulfill — Supply marketplace{% endblock %}
+{% block content %}
+<p class="section-kicker"><a href="{{ url_for('market.dashboard') }}">Seller dashboard</a></p>
+<h1>Orders to fulfill</h1>
+<p class="muted">Orders containing your products. Mark an order fulfilled once it's packed and on its way.</p>
+
+{% if orders %}
+{% for order in orders %}
+<div class="card" style="margin-bottom:16px;">
+  <p><strong>Order #{{ order.id }}</strong>
+    <span class="badge badge-status-{{ order.status }}">{{ order.status | capitalize }}</span>
+    <span class="muted" style="font-size:13px;">· {{ order.created_at.strftime("%b %d, %Y") if order.created_at }}</span></p>
+  <p class="muted" style="font-size:13.5px;">Buyer: {{ order.buyer_name }} ({{ order.buyer_email }})</p>
+  {% if order.buyer_note %}<p style="font-size:13.5px;"><em>“{{ order.buyer_note }}”</em></p>{% endif %}
+  <table class="plain">
+    <thead><tr><th>Your product</th><th>Qty</th><th>Line total</th></tr></thead>
+    <tbody>
+      {% for item in order.items %}
+      {% if item.listing and item.listing.seller_user_id == user_id %}
+      <tr>
+        <td>{{ item.listing.title }}</td>
+        <td>{{ item.qty }}</td>
+        <td>{{ (item.price_cents * item.qty) | dollars }}</td>
+      </tr>
+      {% endif %}
+      {% endfor %}
+    </tbody>
+  </table>
+  {% if order.status in ("pending", "paid") %}
+  <form method="post" action="{{ url_for('market.fulfill_order', order_id=order.id) }}" style="margin-top:10px;">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <button class="btn btn-sm btn-dark" type="submit">Mark fulfilled</button>
+  </form>
+  {% endif %}
+</div>
+{% endfor %}
+{% else %}
+<p class="muted">No open orders with your products right now.</p>
+{% endif %}
+{% endblock %}

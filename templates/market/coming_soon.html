@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}Order received — Supply marketplace{% endblock %}
+{% block content %}
+<p class="section-kicker"><a href="{{ url_for('market.index') }}">Supply marketplace</a></p>
+<h1>Order received</h1>
+<div class="card" style="max-width:640px;">
+  <p><strong>Order #{{ order.id }}</strong> — {{ order.total_cents | dollars }}</p>
+  <p>Thanks, {{ order.buyer_name }}. Your order is saved and the seller has been notified.</p>
+  <p class="muted">
+    Online checkout isn't wired up yet, so there's nothing to pay right now.
+    The seller will reach out to <strong>{{ order.buyer_email }}</strong> to arrange
+    payment and shipping directly.
+  </p>
+  <p>
+    <a class="btn btn-dark" href="{{ url_for('market.order_detail', order_id=order.id) }}">View your order</a>
+    <a class="btn" href="{{ url_for('market.index') }}" style="margin-left:8px;">Keep browsing</a>
+  </p>
+</div>
+{% endblock %}

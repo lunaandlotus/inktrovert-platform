@@ -1,6 +1,8 @@
 # Inktrovert platform — pinned runtime + test dependencies.
 # Mirrors ~/workspace/luna-lotus-portals/requirements.txt (same proven stack),
-# trimmed to what this app uses: no Google APIs, no Stripe, no web push (yet).
+# trimmed to what this app uses: no Google APIs, no web push (yet).
+# Stripe is included for phase-3 billing; the app boots and runs fine without
+# keys set (billing routes degrade to "coming soon").
 # Python 3.11+ (developed on 3.12).
 # Install:  python -m venv .venv && .venv/bin/pip install -r requirements.txt
 Flask==3.1.0
@@ -20,6 +22,9 @@ itsdangerous==2.2.0
 packaging==26.3
 psycopg-binary==3.2.13
 psycopg==3.2.13
+# Phase 3 billing (test mode only until the founder connects live keys).
+# Imported lazily in app/billing.py so the app boots without it.
+stripe>=8,<9
 pycparser==3.0
 pytest==8.3.4
 typing_extensions==4.16.0

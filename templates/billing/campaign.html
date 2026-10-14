@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% block title %}{{ campaign.title }} — fundraising drive{% endblock %}
+{% block content %}
+<section class="hero">
+  <span class="section-kicker">Fundraising drive</span>
+  <h1>{{ campaign.title }}</h1>
+  <p>
+    {% if campaign.status == "active" %}<span class="badge">Active</span>
+    {% elif campaign.status == "ended" %}<span class="badge">Ended</span>
+    {% else %}<span class="badge">Draft</span>{% endif %}
+  </p>
+</section>
+
+<section>
+  <h2>The goal</h2>
+  <p>{{ campaign.description }}</p>
+  {% if campaign.goal_cents %}
+  {% set pct = ((campaign.raised_cents / campaign.goal_cents * 100)|round|int if campaign.raised_cents else 0) %}
+  <div class="progress"><span style="width: {{ pct }}%"></span></div>
+  <p class="muted">${{ "%.2f"|format(campaign.raised_cents / 100) }} raised of ${{ "%.2f"|format(campaign.goal_cents / 100) }} goal — {{ pct }}%</p>
+  {% else %}
+  <p class="muted">${{ "%.2f"|format(campaign.raised_cents / 100) }} raised so far.</p>
+  {% endif %}
+</section>
+
+{% if campaign.status == "active" %}
+<section>
+  <h2>Contribute</h2>
+  <div class="card narrow">
+    {% if not live %}
+    <p><span class="badge">Not collecting yet.</span></p>
+    <p class="muted">The form below shows what contributing will look like. Nothing here charges you — payment rails aren't connected yet.</p>
+    {% endif %}
+    {% if error %}<p class="error">{{ error }}</p>{% endif %}
+    <form method="post" action="{{ url_for('billing.campaign', slug=campaign.slug) }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <div class="form-group">
+        <label for="amount">Amount (USD)</label>
+        <input type="text" id="amount" name="amount" inputmode="decimal" placeholder="25.00" required>
+      </div>
+      <div class="form-group">
+        <label for="display_name">Name for the supporter list</label>
+        <input type="text" id="display_name" name="display_name" maxlength="120" placeholder="A reader">
+      </div>
+      <div class="form-group">
+        <label for="message">A note (optional)</label>
+        <textarea id="message" name="message" rows="3" maxlength="500"></textarea>
+      </div>
+      <div class="form-group">
+        <label><input type="checkbox" name="anonymous"> Keep my contribution anonymous</label>
+      </div>
+      {% if live %}
+      <button class="btn btn-gold" type="submit">Continue to secure checkout</button>
+      <p class="muted">You'll check out securely through Stripe. No account needed.</p>
+      {% else %}
+      <button class="btn" type="submit">Contribute</button>
+      {% endif %}
+    </form>
+  </div>
+</section>
+{% else %}
+<p class="muted">This drive {% if campaign.status == "ended" %}has ended{% else %}isn't open yet{% endif %} — contributions aren't being collected right now.</p>
+{% endif %}
+
+<section>
+  <h2>Supporters</h2>
+  {% if supporter_names %}
+  <ul>
+    {% for name in supporter_names %}
+    <li>{{ name }}</li>
+    {% endfor %}
+  </ul>
+  <p class="muted">Anonymous supporters simply don't appear here — that's by design.</p>
+  {% else %}
+  <p class="empty">No public supporters yet.</p>
+  {% endif %}
+</section>
+
+<p><a class="btn" href="{{ url_for('support.fundraise') }}">&larr; All drives</a></p>
+{% endblock %}

@@ -5,7 +5,11 @@
   <span class="section-kicker">Donate</span>
   <h1>Give once. Keep the ink flowing.</h1>
   <p class="muted">Not a subscriber? No problem. A one-time donation is a plain, simple way to back the magazine — no commitment, no membership, just support.</p>
+  {% if billing_live and billing_live() %}
+  <p><a class="btn btn-gold" href="/billing/donate">Make a donation</a></p>
+  {% else %}
   <p><span class="badge">We're not accepting donations yet.</span></p>
+  {% endif %}
 </section>
 
 <section>

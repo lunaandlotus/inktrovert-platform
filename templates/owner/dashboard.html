@@ -78,6 +78,31 @@
     {% endif %}
   </div>
   <div class="card">
+    <h3>Reviews</h3>
+    <p>{% if pending_reviews %}<span class="badge badge-status-pending">{{ pending_reviews }} pending</span>{% else %}<span class="empty">Nothing waiting.</span>{% endif %}</p>
+    <p><a href="{{ url_for('community.admin_reviews') }}" class="btn btn-sm">Moderate reviews</a></p>
+  </div>
+  <div class="card">
+    <h3>Fundraising drives</h3>
+    <p class="muted">Campaigns, goals, and progress.</p>
+    <p><a href="{{ url_for('billing.admin_campaigns') }}" class="btn btn-sm">Manage drives</a></p>
+  </div>
+  <div class="card">
+    <h3>Subscription tiers</h3>
+    <p class="muted">Prices, perks, and who's on what.</p>
+    <p><a href="{{ url_for('billing.admin_tiers') }}" class="btn btn-sm">Manage tiers</a></p>
+  </div>
+  <div class="card">
+    <h3>Contributions</h3>
+    <p class="muted">Donations and refunds.</p>
+    <p><a href="{{ url_for('billing.admin_contributions') }}" class="btn btn-sm">View contributions</a></p>
+  </div>
+  <div class="card">
+    <h3>Marketplace</h3>
+    <p class="muted">Supply products and orders.</p>
+    <p><a href="{{ url_for('market.admin_index') }}" class="btn btn-sm">Marketplace admin</a></p>
+  </div>
+  <div class="card">
     <h3>Event submissions</h3>
     {% if pending_event_list %}
     <ul>

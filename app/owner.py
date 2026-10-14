@@ -18,8 +18,8 @@ from .db import get_db
 from .models import (BOOK_AUDIENCES, BOOK_CRAFTS, BOOK_KINDS, LEAD_STATUSES,
                      STORY_CATEGORIES, Book, ClaimRequest, Event,
                      FundraisingCampaign, Issue, NewsletterEdition,
-                     PodcastEpisode, PodcastSeries, Profile, Story, StoryLead,
-                     SubscriptionTier, utcnow)
+                     PodcastEpisode, PodcastSeries, Profile, Review, Story,
+                     StoryLead, SubscriptionTier, utcnow)
 
 owner_bp = Blueprint("owner", __name__, url_prefix="/owner")
 
@@ -81,6 +81,7 @@ def dashboard():
     issue_count = db.query(Issue).count()
     episode_count = db.query(PodcastEpisode).count()
     book_count = db.query(Book).count()
+    pending_reviews = db.query(Review).filter_by(status="pending").count()
 
     new_leads = (db.query(StoryLead).filter_by(status="new")
                  .order_by(StoryLead.found_date.desc()).limit(5).all())
@@ -103,6 +104,7 @@ def dashboard():
         new_leads=new_leads,
         pending_claim_list=pending_claim_list,
         pending_event_list=pending_event_list,
+        pending_reviews=pending_reviews,
     )
 
 

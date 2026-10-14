@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Thank you — support the magazine{% endblock %}
+{% block content %}
+<section class="hero">
+  <span class="section-kicker">Thank you</span>
+  <h1>You're keeping the ink flowing.</h1>
+  <p class="muted">
+    {% if kind == "subscription" %}
+    Your subscription is being confirmed — you'll get subscriber access the moment the payment clears.
+    {% elif kind == "drive" %}
+    Your contribution to the drive is being confirmed. Thank you for backing something specific.
+    {% else %}
+    Your donation is being confirmed. Thank you for backing the magazine.
+    {% endif %}
+  </p>
+</section>
+<p><a class="btn btn-gold" href="{{ url_for('public.home') }}">Back to the magazine</a></p>
+{% endblock %}

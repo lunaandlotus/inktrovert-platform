@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Inbox — {{ site_name }}{% endblock %}
+{% block content %}
+<h1>Inbox</h1>
+<p class="muted">Messages and booking requests from collectors.</p>
+
+{% if not inquiries %}
+<p class="muted">Nothing here yet. When someone writes, it'll land here.</p>
+{% endif %}
+
+{% for inquiry in inquiries %}
+{% set profile = profiles.get(inquiry.profile_id) %}
+<div class="card">
+  <p>
+    <strong><a href="{{ url_for('community.inbox_thread', inquiry_id=inquiry.id) }}">{{ mode_labels.get(inquiry.mode, inquiry.mode) }}</a></strong>
+    <span class="badge">{{ status_labels.get(inquiry.status, inquiry.status) }}</span>
+  </p>
+  <p class="muted">{% if profile %}For {{ profile.display_name }} · {% endif %}from {{ display_name(users, inquiry.user_id) }} · {{ inquiry.created_at.strftime("%b %d, %Y %H:%M") if inquiry.created_at }}</p>
+  <p>{{ inquiry.message[:180] }}{% if inquiry.message|length > 180 %}…{% endif %}</p>
+  <p><a class="btn btn-sm" href="{{ url_for('community.inbox_thread', inquiry_id=inquiry.id) }}">Open thread</a></p>
+</div>
+{% endfor %}
+{% endblock %}

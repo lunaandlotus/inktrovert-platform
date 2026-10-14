@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block title %}Supply marketplace — {{ super() }}{% endblock %}
+{% block content %}
+<p class="section-kicker">Pro to pro</p>
+<h1>Supply marketplace</h1>
+<p class="muted">Quality supplies from brands and studios in the industry. Pros selling to pros — no middlemen.</p>
+
+{% if has_samples %}
+<div class="alert alert-info">
+  <strong>Sample listings.</strong> These are placeholder products so you can see how the
+  marketplace works. Real listings from verified suppliers will appear here as sellers join.
+</div>
+{% endif %}
+
+<form method="get" action="{{ url_for('market.index') }}" class="filters">
+  <div class="form-group">
+    <label for="q">Search</label>
+    <input type="text" id="q" name="q" value="{{ q }}" placeholder="balm, cartridges, ink…">
+  </div>
+  <div class="form-group">
+    <label for="category">Category</label>
+    <select id="category" name="category">
+      <option value="">All categories</option>
+      {% for code, label in categories %}
+      <option value="{{ code }}" {% if category == code %}selected{% endif %}>{{ label }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="form-group">
+    <button class="btn btn-dark" type="submit">Search</button>
+  </div>
+</form>
+
+{% if listings %}
+<div class="grid">
+  {% for listing in listings %}
+  {% set detail = details.get(listing.id) %}
+  <div class="card">
+    {% if detail and detail.image %}
+    <a href="{{ url_for('market.product_detail', listing_id=listing.id) }}">
+      <img src="{{ url_for('uploaded_file', filename=detail.image) }}" alt="{{ listing.title }}"
+           style="width:100%; height:180px; object-fit:cover; border-radius:3px; margin-bottom:10px;">
+    </a>
+    {% endif %}
+    <h3><a href="{{ url_for('market.product_detail', listing_id=listing.id) }}">{{ listing.title }}</a></h3>
+    <p class="meta">
+      <span class="badge">{{ listing.category | category_label }}</span>
+      {% if detail and detail.is_sample %}<span class="badge">Sample</span>{% endif %}
+    </p>
+    <p class="muted" style="font-size:13.5px;">{{ listing.description[:140] }}{% if listing.description|length > 140 %}…{% endif %}</p>
+    <p><strong>{{ listing.price_cents | dollars }}</strong>
+      {% if detail and detail.stock is not none %}
+        <span class="muted" style="font-size:12.5px;">
+          {% if detail.stock > 0 %}· {{ detail.stock }} in stock{% else %}· out of stock{% endif %}
+        </span>
+      {% endif %}
+    </p>
+    <p><a class="btn btn-sm btn-gold" href="{{ url_for('market.product_detail', listing_id=listing.id) }}">View</a></p>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<p class="muted">Nothing here yet{% if q or category %} for this search{% endif %}. Try a different search, or check back soon.</p>
+{% endif %}
+
+<hr style="margin:36px 0; border:none; border-top:1px solid var(--line);">
+<p>
+  <strong>Sell your supplies?</strong>
+  <a href="{{ url_for('market.dashboard') }}">Open the seller dashboard</a> to list products for the industry.
+  &nbsp;·&nbsp; <a href="{{ url_for('market.cart_view') }}">Your cart</a>
+</p>
+{% endblock %}

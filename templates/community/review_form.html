@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}Review {{ profile.display_name }} — {{ site_name }}{% endblock %}
+{% block content %}
+<p><a href="{{ url_for('community.reviews', slug=profile.slug) }}">&larr; Back to reviews</a></p>
+<h1>Review {{ profile.display_name }}</h1>
+<p class="muted">Reviews go through a quick moderation check before they show publicly.</p>
+
+<form class="styled" method="post" action="{{ url_for('community.review', slug=profile.slug) }}">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <div class="form-group">
+    <label for="rating">Your rating</label>
+    <select id="rating" name="rating" required>
+      <option value="">Pick one…</option>
+      {% for n in [5, 4, 3, 2, 1] %}
+      <option value="{{ n }}" {% if existing and existing.rating == n %}selected{% endif %}>{{ n }} star{{ "s" if n != 1 }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="form-group">
+    <label for="body">Your review</label>
+    <textarea id="body" name="body" required>{{ existing.body if existing else "" }}</textarea>
+    <p class="hint">What was the experience like? Keep it honest and kind.</p>
+  </div>
+  <button class="btn btn-gold" type="submit">{% if existing %}Update review{% else %}Submit review{% endif %}</button>
+</form>
+{% endblock %}

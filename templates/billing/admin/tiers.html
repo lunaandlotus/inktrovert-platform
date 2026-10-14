@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Subscription tiers — billing admin{% endblock %}
+{% block content %}
+<div class="section-kicker">Owner desk · Billing</div>
+<p><a href="{{ url_for('billing.admin_index') }}">&larr; Billing admin</a></p>
+<h1>Subscription tiers</h1>
+<p><a class="btn btn-gold" href="{{ url_for('billing.admin_tier_new') }}">New tier</a></p>
+
+{% if tiers %}
+<table class="plain">
+  <thead>
+    <tr><th>Name</th><th>Audience</th><th>Kind</th><th>Price</th><th>Active</th><th></th></tr>
+  </thead>
+  <tbody>
+    {% for t in tiers %}
+    <tr>
+      <td><strong>{{ t.name }}</strong><br><span class="muted">{{ t.slug }}</span></td>
+      <td>{{ t.audience }}</td>
+      <td>{{ t.kind }}</td>
+      <td class="muted">{{ "$%.2f" | format(t.price_cents / 100) if t.price_cents is not none else "TBD" }}</td>
+      <td><span class="badge {% if t.is_active %}badge-status-published{% endif %}">{{ "yes" if t.is_active else "no" }}</span></td>
+      <td>
+        <a class="btn" href="{{ url_for('billing.admin_tier_edit', tier_id=t.id) }}">Edit</a>
+        <form method="post" action="{{ url_for('billing.admin_tier_delete', tier_id=t.id) }}" style="display:inline" onsubmit="return confirm('Delete this tier?');">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button class="btn" type="submit">Delete</button>
+        </form>
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<p class="empty">No tiers yet. Start one with “New tier”.</p>
+{% endif %}
+{% endblock %}

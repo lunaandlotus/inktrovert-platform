@@ -26,6 +26,9 @@
     <p class="muted">${{ "%.2f"|format(c.raised_cents / 100) }} raised (no goal set yet)</p>
     {% endif %}
     <a class="btn" href="{{ url_for('support.campaign_detail', slug=c.slug) }}">View drive</a>
+    {% if c.status == "active" and billing_live and billing_live() %}
+    <a class="btn btn-gold" href="/billing/campaign/{{ c.slug }}">Contribute</a>
+    {% endif %}
   </article>
   {% endfor %}
 </div>

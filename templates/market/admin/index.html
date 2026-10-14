@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}Marketplace admin{% endblock %}
+{% block content %}
+<p class="section-kicker">Owner desk · Marketplace</p>
+<h1>Marketplace admin</h1>
+<p class="muted">Everything about the supply marketplace, in one place.</p>
+
+<div class="grid">
+  <div class="card">
+    <h3>Products</h3>
+    <p class="meta">{{ counts.listed }} live · {{ counts.draft }} draft</p>
+    <p>Every seller's listings — add, edit, or remove anything.</p>
+    <p><a class="btn btn-dark btn-sm" href="{{ url_for('market.admin_products') }}">Manage products</a>
+       <a class="btn btn-sm" href="{{ url_for('market.admin_product_new') }}">Add product</a></p>
+  </div>
+  <div class="card">
+    <h3>Orders</h3>
+    <p class="meta">{{ counts.orders_open }} open · {{ counts.orders_pending }} awaiting payment</p>
+    <p>Every order, every buyer, every status.</p>
+    <p><a class="btn btn-dark btn-sm" href="{{ url_for('market.admin_orders') }}">Manage orders</a></p>
+  </div>
+  <div class="card">
+    <h3>Storefront</h3>
+    <p class="meta">What buyers see</p>
+    <p>Check the live catalog the way a buyer sees it.</p>
+    <p><a class="btn btn-sm" href="{{ url_for('market.index') }}">View marketplace</a></p>
+  </div>
+</div>
+{% endblock %}

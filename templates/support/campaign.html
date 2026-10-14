@@ -30,6 +30,8 @@
   {% endif %}
   {% if campaign.status != "active" %}
   <p class="muted">This drive {% if campaign.status == "ended" %}has ended{% else %}isn't open yet{% endif %} — contributions aren't being collected right now.</p>
+  {% elif billing_live and billing_live() %}
+  <p><a class="btn btn-gold" href="/billing/campaign/{{ campaign.slug }}">Contribute</a></p>
   {% else %}
   <p class="muted">We haven't chosen payment rails yet, so this drive isn't collecting contributions right now. Watch this space.</p>
   {% endif %}

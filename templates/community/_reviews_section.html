@@ -1,0 +1,30 @@
+{# Reviews section for a directory profile page. Include with a `profile` in
+   context. For the full inline treatment (aggregate + review list), the
+   profile view should also pass:
+     rating_summary    = get_rating_summary(profile.id)      # (avg, count)
+     published_reviews = db.query(Review).filter_by(
+                             profile_id=profile.id, status="published")
+                             .order_by(Review.created_at.desc()).all()
+   Without that context the section gracefully degrades to a link card. #}
+<section>
+  <h2>Reviews</h2>
+  {% set summary = rating_summary|default(none) %}
+  {% if summary %}
+    {% set avg, count = summary %}
+    {% if count %}
+    <p><strong>{{ "%.1f"|format(avg) }}</strong> out of 5 stars · {{ count }} review{{ "s" if count != 1 }}</p>
+    {% for review in published_reviews|default([]) %}
+    <div class="card">
+      <p><strong>{{ "%.0f"|format(review.rating) }} / 5 stars</strong></p>
+      <p>{{ review.body }}</p>
+    </div>
+    {% endfor %}
+    {% else %}
+    <p class="muted">No reviews yet — yours could be the first.</p>
+    {% endif %}
+    <p><a href="{{ url_for('community.reviews', slug=profile.slug) }}">All reviews</a> · <a class="btn btn-gold btn-sm" href="{{ url_for('community.review', slug=profile.slug) }}">Write a review</a></p>
+  {% else %}
+  <p class="muted">See what collectors say about {{ profile.display_name }}.</p>
+  <p><a href="{{ url_for('community.reviews', slug=profile.slug) }}">Read reviews</a> · <a class="btn btn-gold btn-sm" href="{{ url_for('community.review', slug=profile.slug) }}">Write a review</a></p>
+  {% endif %}
+</section>

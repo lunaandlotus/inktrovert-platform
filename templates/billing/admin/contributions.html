@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}Contributions — billing admin{% endblock %}
+{% block content %}
+<div class="section-kicker">Owner desk · Billing</div>
+<p><a href="{{ url_for('billing.admin_index') }}">&larr; Billing admin</a></p>
+<h1>Contributions</h1>
+<p class="muted">One-time donations and drive contributions. Read-only — refunds go through the payment provider.</p>
+{% if not live %}
+<div class="alert alert-info"><strong>Payment rails aren't connected.</strong> Refunds aren't available yet — the button will say so rather than fail.</div>
+{% endif %}
+
+{% if contributions %}
+<table class="plain">
+  <thead>
+    <tr><th>Donor</th><th>Amount</th><th>Campaign</th><th>Status</th><th>Date</th><th></th></tr>
+  </thead>
+  <tbody>
+    {% for c in contributions %}
+    <tr>
+      <td><strong>{{ c.display_name or "—" }}</strong>
+        {% if c.is_anonymous %}<span class="badge">anonymous</span>{% endif %}
+        {% if c.message %}<br><span class="muted">“{{ c.message|truncate(80) }}”</span>{% endif %}
+      </td>
+      <td>{{ "$%.2f" | format(c.amount_cents / 100) if c.amount_cents is not none else "—" }}</td>
+      <td class="muted">{{ c.campaign.title if c.campaign else "—" }}</td>
+      <td><span class="badge {% if c.status == 'completed' %}badge-status-published{% elif c.status == 'refunded' %}badge-status-rejected{% endif %}">{{ c.status }}</span></td>
+      <td class="muted">{{ c.created_at.strftime("%Y-%m-%d") if c.created_at else "—" }}</td>
+      <td>
+        {% if c.status == "completed" %}
+        <form method="post" action="{{ url_for('billing.admin_contribution_refund', contribution_id=c.id) }}" onsubmit="return confirm('Refund this contribution?');">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button class="btn" type="submit">Refund</button>
+        </form>
+        {% endif %}
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<p class="empty">No contributions recorded yet.</p>
+{% endif %}
+{% endblock %}

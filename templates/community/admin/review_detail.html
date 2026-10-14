@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}Review — {{ site_name }}{% endblock %}
+{% block content %}
+<div class="section-kicker">Owner desk</div>
+<p><a href="{{ url_for('community.admin_reviews', status=review.status) }}">&larr; Back to {{ review.status }} reviews</a></p>
+<h1>Review <span class="badge badge-status-{{ review.status }}">{{ review.status }}</span></h1>
+<p class="muted">
+  <strong>{{ review.rating }}/5 stars</strong>
+  {% if profile %} · for <a href="{{ url_for('directory.profile_detail', slug=profile.slug) }}">{{ profile.display_name }}</a>{% endif %}
+  · by {{ display_name(users, review.user_id) }} · {{ review.created_at.strftime("%b %d, %Y %H:%M") if review.created_at }}
+</p>
+
+<div class="card">
+  <form method="post" action="{{ url_for('community.admin_review_detail', review_id=review.id) }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div class="form-group">
+      <label for="body">Review text (you can edit this directly)</label>
+      <textarea id="body" name="body">{{ review.body }}</textarea>
+    </div>
+    <button class="btn btn-sm" type="submit">Save text</button>
+  </form>
+</div>
+
+<h2>Moderation</h2>
+<div class="form-row">
+  {% if review.status != "published" %}
+  <form method="post" action="{{ url_for('community.admin_review_publish', review_id=review.id) }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <button class="btn btn-gold btn-sm" type="submit">Publish</button>
+  </form>
+  {% endif %}
+  {% if review.status != "hidden" %}
+  <form method="post" action="{{ url_for('community.admin_review_hide', review_id=review.id) }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <button class="btn btn-sm" type="submit">Hide</button>
+  </form>
+  {% endif %}
+</div>
+<p class="hint muted">Hiding pulls the review off the public page but keeps it — publish it again any time. Deleting is permanent.</p>
+
+<div class="card">
+  <form method="post" action="{{ url_for('community.admin_review_delete', review_id=review.id) }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div class="form-group">
+      <label><input type="checkbox" name="confirm" value="yes"> Yes, delete this review permanently</label>
+    </div>
+    <button class="btn btn-danger btn-sm" type="submit">Delete</button>
+  </form>
+</div>
+{% endblock %}

@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Order #{{ order.id }} confirmed — Supply marketplace{% endblock %}
+{% block content %}
+<p class="section-kicker"><a href="{{ url_for('market.index') }}">Supply marketplace</a></p>
+<h1>Order confirmed</h1>
+<div class="card" style="max-width:640px;">
+  <p><strong>Order #{{ order.id }}</strong> — {{ order.total_cents | dollars }}</p>
+  {% if order.status == "paid" %}
+  <p>Payment received. The seller will get your order ready.</p>
+  {% else %}
+  <p>Your order is in. {% if order.provider %}Payment is being processed.{% else %}The seller will be in touch about payment.{% endif %}</p>
+  {% endif %}
+  <p>
+    <a class="btn btn-dark" href="{{ url_for('market.order_detail', order_id=order.id) }}">View order details</a>
+    <a class="btn" href="{{ url_for('market.index') }}" style="margin-left:8px;">Keep browsing</a>
+  </p>
+</div>
+{% endblock %}

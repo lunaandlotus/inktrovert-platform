@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}{{ mode_labels.get(inquiry.mode, inquiry.mode) }} — {{ site_name }}{% endblock %}
+{% block content %}
+<p><a href="{{ url_for('community.my_inquiries') }}">&larr; Back to my messages</a></p>
+<h1>{{ mode_labels.get(inquiry.mode, inquiry.mode) }} <span class="badge">{{ status_labels.get(inquiry.status, inquiry.status) }}</span></h1>
+<p class="muted">
+  {% if profile %}With {{ profile.display_name }} · {% endif %}
+  {{ inquiry.created_at.strftime("%b %d, %Y %H:%M") if inquiry.created_at }}
+</p>
+
+<div class="card">
+  <p>{{ inquiry.message }}</p>
+</div>
+
+{% for reply in replies %}
+<div class="card">
+  <p class="muted">{{ display_name(users, reply.sender_user_id) }} · {{ reply.created_at.strftime("%b %d, %Y %H:%M") if reply.created_at }}</p>
+  <p>{{ reply.body }}</p>
+</div>
+{% endfor %}
+
+<form class="styled" method="post" action="{{ url_for('community.my_inquiry_thread', inquiry_id=inquiry.id) }}">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <div class="form-group">
+    <label for="body">Your message</label>
+    <textarea id="body" name="body" required></textarea>
+  </div>
+  <button class="btn btn-gold" type="submit">Send</button>
+</form>
+{% endblock %}

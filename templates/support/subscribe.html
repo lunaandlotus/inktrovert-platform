@@ -5,7 +5,11 @@
   <span class="section-kicker">Subscribe</span>
   <h1>Become an Inktrovert subscriber.</h1>
   <p class="muted">Subscriptions are the steady heartbeat of the magazine: they pay the writers and photographers so the stories stay free for everyone else. Here's what's coming.</p>
+  {% if billing_live and billing_live() %}
+  <p><span class="badge">Memberships are open.</span></p>
+  {% else %}
   <p><span class="badge">Memberships aren't open yet — we're choosing payment rails. This is what's coming.</span></p>
+  {% endif %}
 </section>
 
 {% if tiers %}
@@ -22,6 +26,9 @@
     </ul>
     {% endif %}
     <p><strong>{% if tier.price_cents is not none %}${{ "%.2f"|format(tier.price_cents / 100) }}{% else %}To be announced{% endif %}</strong></p>
+    {% if tier.is_active and tier.price_cents is not none %}
+    <p><a class="btn btn-gold" href="/billing/subscribe/{{ tier.slug }}">Choose {{ tier.name }}</a></p>
+    {% endif %}
   </article>
   {% endfor %}
 </div>

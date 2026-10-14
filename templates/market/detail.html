@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %}{{ listing.title }} — Supply marketplace{% endblock %}
+{% block content %}
+<p class="section-kicker"><a href="{{ url_for('market.index') }}">Supply marketplace</a></p>
+<h1>{{ listing.title }}</h1>
+<p class="meta muted">
+  <span class="badge">{{ listing.category | category_label }}</span>
+  {% if detail and detail.is_sample %}<span class="badge">Sample listing</span>{% endif %}
+  {% if brand %}Sold by <a href="{{ url_for('directory.profile_detail', slug=brand.slug) }}">{{ brand.display_name }}</a>
+  {% elif seller %}Sold by {{ seller.full_name or seller.email }}{% endif %}
+</p>
+
+<div class="form-row" style="align-items:start;">
+  <div class="form-group" style="flex:1.2;">
+    {% if detail and detail.image %}
+    <img src="{{ url_for('uploaded_file', filename=detail.image) }}" alt="{{ listing.title }}"
+         style="width:100%; border-radius:4px; border:1px solid var(--line);">
+    {% endif %}
+    <div class="article-body" style="margin-top:14px;">
+      {% for para in listing.description.split('\n\n') %}
+      <p>{{ para }}</p>
+      {% endfor %}
+    </div>
+  </div>
+  <div class="form-group" style="flex:0.8;">
+    <div class="card">
+      <p style="font-size:26px; margin:0 0 6px;"><strong>{{ listing.price_cents | dollars }}</strong></p>
+      <p class="muted" style="font-size:13.5px;">
+        {% if detail and detail.stock is not none %}
+          {% if detail.stock > 0 %}{{ detail.stock }} in stock{% else %}<strong>Out of stock</strong>{% endif %}
+        {% else %}
+          Made to order
+        {% endif %}
+      </p>
+      {% if detail and (detail.stock is none or detail.stock > 0) %}
+      <form method="post" action="{{ url_for('market.cart_add', listing_id=listing.id) }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <input type="hidden" name="next" value="{{ url_for('market.cart_view') }}">
+        <div class="form-group">
+          <label for="qty">Quantity</label>
+          <input type="number" id="qty" name="qty" value="1" min="1" max="99" style="width:90px;">
+        </div>
+        <button class="btn btn-gold" type="submit">Add to cart</button>
+      </form>
+      {% else %}
+      <p class="muted">This product is currently unavailable.</p>
+      {% endif %}
+      <p style="margin-top:12px;"><a href="{{ url_for('market.cart_view') }}">View cart</a></p>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}Checkout canceled — support the magazine{% endblock %}
+{% block content %}
+<section class="hero">
+  <span class="section-kicker">No charge made</span>
+  <h1>You backed out — that's fine.</h1>
+  <p class="muted">The checkout was canceled before anything was paid. Nothing was charged, and nothing will be.</p>
+</section>
+<p><a class="btn btn-gold" href="{{ url_for('support.index') }}">Back to support the magazine</a></p>
+{% endblock %}

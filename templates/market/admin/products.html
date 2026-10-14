@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}Marketplace products — admin{% endblock %}
+{% block content %}
+<p class="section-kicker"><a href="{{ url_for('market.admin_index') }}">Marketplace admin</a></p>
+<h1>Products</h1>
+<p>
+  <a class="btn btn-gold" href="{{ url_for('market.admin_product_new') }}">Add product</a>
+</p>
+<p class="filters" style="align-items:center;">
+  <span class="muted" style="font-size:13px;">Show:</span>
+  <a class="btn btn-sm {% if not status %}btn-dark{% endif %}" href="{{ url_for('market.admin_products') }}">All</a>
+  {% for s in statuses %}
+  <a class="btn btn-sm {% if status == s %}btn-dark{% endif %}" href="{{ url_for('market.admin_products', status=s) }}">{{ s | capitalize }}</a>
+  {% endfor %}
+</p>
+
+{% if listings %}
+<table class="plain">
+  <thead>
+    <tr><th>Product</th><th>Seller</th><th>Category</th><th>Price</th><th>Stock</th><th>Status</th><th></th></tr>
+  </thead>
+  <tbody>
+    {% for listing in listings %}
+    {% set detail = details.get(listing.id) %}
+    {% set seller = sellers.get(listing.seller_user_id) %}
+    <tr>
+      <td>{{ listing.title }}{% if detail and detail.is_sample %} <span class="badge">Sample</span>{% endif %}</td>
+      <td class="muted" style="font-size:12.5px;">{{ seller.full_name or seller.email if seller else "—" }}</td>
+      <td>{{ listing.category | category_label }}</td>
+      <td>{{ listing.price_cents | dollars }}</td>
+      <td>{% if detail and detail.stock is not none %}{{ detail.stock }}{% else %}∞{% endif %}</td>
+      <td><span class="badge badge-status-{{ listing.status }}">{{ listing.status | capitalize }}</span></td>
+      <td style="white-space:nowrap;">
+        <a class="btn btn-sm" href="{{ url_for('market.admin_product_edit', listing_id=listing.id) }}">Edit</a>
+        <form method="post" action="{{ url_for('market.admin_product_delete', listing_id=listing.id) }}"
+              style="display:inline;" onsubmit="return confirm('Delete this product for good?');">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button class="btn btn-sm btn-danger" type="submit">Delete</button>
+        </form>
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<p class="muted">No products{% if status %} with status “{{ status }}”{% endif %}. <a href="{{ url_for('market.admin_product_new') }}">Add the first one</a>.</p>
+{% endif %}
+{% endblock %}

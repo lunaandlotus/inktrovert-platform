@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block title %}{% if is_new %}New tier{% else %}Edit tier{% endif %} — billing admin{% endblock %}
+{% block content %}
+<div class="section-kicker">Owner desk · Billing</div>
+<p><a href="{{ url_for('billing.admin_tiers') }}">&larr; Back to tiers</a></p>
+<h1>{% if is_new %}New subscription tier{% else %}Edit “{{ tier.name }}”{% endif %}</h1>
+
+<form method="post">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <div class="form-group">
+    <label for="name">Name</label>
+    <input type="text" id="name" name="name" value="{{ request.form.get('name', tier.name or '') }}" maxlength="100" required>
+  </div>
+  <div class="form-group">
+    <label for="slug">Slug</label>
+    <input type="text" id="slug" name="slug" value="{{ request.form.get('slug', tier.slug or '') }}" maxlength="120">
+    <p class="hint">Left blank, it's made from the name.</p>
+  </div>
+  <div class="form-row">
+    <div class="form-group">
+      <label for="audience">Audience</label>
+      <select id="audience" name="audience">
+        {% for a in audiences %}
+        <option value="{{ a }}"{% if (request.form.get('audience') or tier.audience) == a %} selected{% endif %}>{{ a|title }}</option>
+        {% endfor %}
+      </select>
+      <p class="hint">Magazine tiers unlock the paywall; studio tiers come later.</p>
+    </div>
+    <div class="form-group">
+      <label for="kind">Kind</label>
+      <select id="kind" name="kind">
+        {% for k in kinds %}
+        <option value="{{ k }}"{% if (request.form.get('kind') or tier.kind) == k %} selected{% endif %}>{{ k|title }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="form-group">
+      <label for="price_dollars">Price per month (USD)</label>
+      <input type="text" id="price_dollars" name="price_dollars" inputmode="decimal"
+             value="{{ request.form.get('price_dollars', '%.2f' % (tier.price_cents / 100) if tier.price_cents is not none else '') }}"
+             placeholder="4.99">
+      <p class="hint">Leave blank for “to be announced”.</p>
+    </div>
+  </div>
+  <div class="form-group">
+    <label for="description">Description</label>
+    <textarea id="description" name="description" rows="4">{{ request.form.get('description', tier.description or '') }}</textarea>
+  </div>
+  <div class="form-group">
+    <label for="perks">Perks — one per line</label>
+    <textarea id="perks" name="perks" rows="5">{{ request.form.get('perks', (tier.perks or [])|join('\n')) }}</textarea>
+  </div>
+  <div class="form-group">
+    <label><input type="checkbox" name="is_active"{% if request.form.get('is_active', tier.is_active if tier.id else False) %} checked{% endif %}> Active — shown on the subscribe page</label>
+  </div>
+  <button class="btn btn-gold" type="submit">{% if is_new %}Create tier{% else %}Save changes{% endif %}</button>
+</form>
+{% endblock %}

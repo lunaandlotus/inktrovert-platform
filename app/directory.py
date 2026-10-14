@@ -11,8 +11,8 @@ from __future__ import annotations
 from flask import Blueprint, abort, render_template, request
 
 from .db import get_db
-from .models import (PROFILE_KINDS, Event, Profile, Story, TeamAffiliation,
-                     US_STATES, normalize_state)
+from .models import (PROFILE_KINDS, Event, Profile, Review, Story,
+                     TeamAffiliation, US_STATES, normalize_state)
 
 directory_bp = Blueprint("directory", __name__, url_prefix="/directory")
 
@@ -134,6 +134,14 @@ def profile_detail(slug):
             if studio is not None and studio.is_listed:
                 studios.append((studio, a.role_label))
 
+    from .community import get_rating_summary
+    rating_summary = get_rating_summary(profile.id)
+    published_reviews = (
+        db.query(Review)
+        .filter_by(profile_id=profile.id, status="published")
+        .order_by(Review.created_at.desc()).all()
+    )
+
     return render_template(
         "directory/profile.html",
         profile=profile,
@@ -142,6 +150,8 @@ def profile_detail(slug):
         members=members,
         studios=studios,
         flash_labels=FLASH_LABELS,
+        rating_summary=rating_summary,
+        published_reviews=published_reviews,
     )
 
 

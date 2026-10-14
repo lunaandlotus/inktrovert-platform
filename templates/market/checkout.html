@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}Checkout — Supply marketplace{% endblock %}
+{% block content %}
+<p class="section-kicker"><a href="{{ url_for('market.index') }}">Supply marketplace</a></p>
+<h1>Checkout</h1>
+
+<h2>Your order</h2>
+<table class="plain">
+  <thead>
+    <tr><th>Product</th><th>Qty</th><th>Line total</th></tr>
+  </thead>
+  <tbody>
+    {% for listing, detail, qty in lines %}
+    <tr>
+      <td>{{ listing.title }}</td>
+      <td>{{ qty }}</td>
+      <td>{{ (listing.price_cents * qty) | dollars }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+<p style="font-size:18px;"><strong>Total: {{ total_cents | dollars }}</strong></p>
+
+<h2>Where do we send it?</h2>
+<form method="post" action="{{ url_for('market.checkout') }}">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <div class="form-row">
+    <div class="form-group">
+      <label for="buyer_name">Your name</label>
+      <input type="text" id="buyer_name" name="buyer_name" required
+             value="{{ (form.buyer_name if form) or (current_user.full_name if current_user) or '' }}">
+    </div>
+    <div class="form-group">
+      <label for="buyer_email">Email</label>
+      <input type="email" id="buyer_email" name="buyer_email" required
+             value="{{ (form.buyer_email if form) or (current_user.email if current_user) or '' }}">
+      <span class="hint">The seller uses this to arrange payment and shipping.</span>
+    </div>
+  </div>
+  <div class="form-group">
+    <label for="buyer_note">Note for the seller (optional)</label>
+    <textarea id="buyer_note" name="buyer_note" rows="3"
+              placeholder="Shipping address, studio name, anything they should know…">{{ (form.buyer_note if form) or '' }}</textarea>
+  </div>
+  <button class="btn btn-gold" type="submit">Place order</button>
+  <a class="btn" href="{{ url_for('market.cart_view') }}" style="margin-left:8px;">Back to cart</a>
+</form>
+<p class="muted" style="margin-top:14px; font-size:13px;">
+  Online payments aren't live yet — placing an order saves it and we'll be in touch about payment.
+</p>
+{% endblock %}

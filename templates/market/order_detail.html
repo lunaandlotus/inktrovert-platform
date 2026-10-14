@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}Order #{{ order.id }} — Supply marketplace{% endblock %}
+{% block content %}
+<p class="section-kicker"><a href="{{ url_for('market.buyer_orders') }}">Your orders</a></p>
+<h1>Order #{{ order.id }}</h1>
+<p class="muted">
+  Placed {{ order.created_at.strftime("%b %d, %Y at %I:%M %p") if order.created_at }} ·
+  <span class="badge badge-status-{{ order.status }}">{{ order.status | capitalize }}</span>
+</p>
+
+<table class="plain">
+  <thead>
+    <tr><th>Product</th><th>Qty</th><th>Price</th><th>Line total</th></tr>
+  </thead>
+  <tbody>
+    {% for item in order.items %}
+    <tr>
+      <td>{% if item.listing %}{{ item.listing.title }}{% else %}<span class="muted">Removed product</span>{% endif %}</td>
+      <td>{{ item.qty }}</td>
+      <td>{{ item.price_cents | dollars }}</td>
+      <td>{{ (item.price_cents * item.qty) | dollars }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+<p style="font-size:18px;"><strong>Total: {{ order.total_cents | dollars }}</strong></p>
+
+{% if order.buyer_note %}
+<h2>Your note</h2>
+<p>{{ order.buyer_note }}</p>
+{% endif %}
+
+{% if order.status == "pending" %}
+<form method="post" action="{{ url_for('market.order_cancel', order_id=order.id) }}"
+      onsubmit="return confirm('Cancel this order?');">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <button class="btn btn-danger" type="submit">Cancel order</button>
+</form>
+{% endif %}
+{% endblock %}

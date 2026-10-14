@@ -95,12 +95,16 @@ def create_app(config_object=None) -> Flask:
     # Blueprint registration (local imports: keep package import light).
     from .public import public_bp
     from .podcasts import podcast_bp
+    from .books import book_bp
     from .directory import directory_bp
     from .claims import claims_bp
     from .account import account_bp
     from .manage import manage_bp
     from .owner import owner_bp
     from .support import support_bp
+    from .billing import billing_bp
+    from .community import community_bp
+    from .market import market_bp
 
     app.register_blueprint(public_bp)
     app.register_blueprint(podcast_bp)
@@ -111,6 +115,9 @@ def create_app(config_object=None) -> Flask:
     app.register_blueprint(manage_bp)
     app.register_blueprint(owner_bp)
     app.register_blueprint(support_bp)
+    app.register_blueprint(billing_bp)
+    app.register_blueprint(community_bp)
+    app.register_blueprint(market_bp)
 
     @app.context_processor
     def _template_context():

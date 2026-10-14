@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}Your orders — Supply marketplace{% endblock %}
+{% block content %}
+<p class="section-kicker"><a href="{{ url_for('market.index') }}">Supply marketplace</a></p>
+<h1>Your orders</h1>
+
+{% if orders %}
+<table class="plain">
+  <thead>
+    <tr><th>Order</th><th>Date</th><th>Items</th><th>Total</th><th>Status</th><th></th></tr>
+  </thead>
+  <tbody>
+    {% for order in orders %}
+    <tr>
+      <td>#{{ order.id }}</td>
+      <td>{{ order.created_at.strftime("%b %d, %Y") if order.created_at }}</td>
+      <td>{{ order.items | length }}</td>
+      <td>{{ order.total_cents | dollars }}</td>
+      <td><span class="badge badge-status-{{ order.status }}">{{ order.status | capitalize }}</span></td>
+      <td><a href="{{ url_for('market.order_detail', order_id=order.id) }}">View</a></td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<p class="muted">No orders yet. <a href="{{ url_for('market.index') }}">Browse the marketplace</a>.</p>
+{% endif %}
+{% endblock %}

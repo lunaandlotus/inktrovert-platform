@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Reviews — {{ profile.display_name }} — {{ site_name }}{% endblock %}
+{% block content %}
+<p><a href="{{ url_for('directory.profile_detail', slug=profile.slug) }}">&larr; Back to {{ profile.display_name }}</a></p>
+<h1>Reviews</h1>
+
+<div class="card">
+  {% if count %}
+  <p><strong>{{ "%.1f"|format(avg) }}</strong> out of 5 stars · {{ count }} review{{ "s" if count != 1 }}</p>
+  {% else %}
+  <p class="muted">No reviews yet — yours could be the first.</p>
+  {% endif %}
+  {% if my_review and my_review.status == "pending" %}
+  <p class="muted">Your review is in the moderation queue.</p>
+  {% endif %}
+  <p><a class="btn btn-gold btn-sm" href="{{ url_for('community.review', slug=profile.slug) }}">{% if my_review %}Update your review{% else %}Write a review{% endif %}</a></p>
+</div>
+
+{% for review in reviews %}
+<div class="card">
+  <p><strong>{{ "%.0f"|format(review.rating) }} / 5 stars</strong> <span class="muted">· {{ display_name(users, review.user_id) }} · {{ review.created_at.strftime("%b %d, %Y") if review.created_at }}</span></p>
+  <p>{{ review.body }}</p>
+</div>
+{% endfor %}
+{% endblock %}

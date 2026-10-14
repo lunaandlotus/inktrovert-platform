@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}Seller dashboard — Supply marketplace{% endblock %}
+{% block content %}
+<p class="section-kicker"><a href="{{ url_for('market.index') }}">Supply marketplace</a></p>
+<h1>Seller dashboard</h1>
+<p>
+  <a class="btn btn-gold" href="{{ url_for('market.listing_new') }}">New listing</a>
+  <a class="btn" href="{{ url_for('market.seller_orders') }}" style="margin-left:8px;">Orders to fulfill</a>
+</p>
+
+{% if listings %}
+<table class="plain">
+  <thead>
+    <tr><th>Product</th><th>Category</th><th>Price</th><th>Stock</th><th>Status</th><th></th></tr>
+  </thead>
+  <tbody>
+    {% for listing in listings %}
+    {% set detail = details.get(listing.id) %}
+    <tr>
+      <td>{{ listing.title }}</td>
+      <td>{{ listing.category | category_label }}</td>
+      <td>{{ listing.price_cents | dollars }}</td>
+      <td>{% if detail and detail.stock is not none %}{{ detail.stock }}{% else %}∞{% endif %}</td>
+      <td><span class="badge badge-status-{{ listing.status }}">{{ listing.status | capitalize }}</span></td>
+      <td style="white-space:nowrap;">
+        <a class="btn btn-sm" href="{{ url_for('market.listing_edit', listing_id=listing.id) }}">Edit</a>
+        <form method="post" action="{{ url_for('market.listing_status', listing_id=listing.id) }}" style="display:inline;">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          {% if listing.status == "draft" %}
+          <button class="btn btn-sm btn-dark" type="submit" name="action" value="publish">Publish</button>
+          {% elif listing.status == "listed" %}
+          <button class="btn btn-sm" type="submit" name="action" value="unpublish">Unpublish</button>
+          <button class="btn btn-sm" type="submit" name="action" value="sold">Mark sold</button>
+          {% elif listing.status == "removed" %}
+          <button class="btn btn-sm btn-dark" type="submit" name="action" value="relist">Relist</button>
+          {% endif %}
+          {% if listing.status != "removed" %}
+          <button class="btn btn-sm btn-danger" type="submit" name="action" value="remove"
+                  onclick="return confirm('Remove this listing?');">Remove</button>
+          {% endif %}
+        </form>
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<p class="muted">No listings yet. <a href="{{ url_for('market.listing_new') }}">Create your first listing</a> — it starts as a draft until you publish it.</p>
+{% endif %}
+{% endblock %}

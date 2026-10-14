@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}Coming soon — support the magazine{% endblock %}
+{% block content %}
+<section class="hero">
+  <span class="section-kicker">Support the magazine</span>
+  <h1>Not taking payments yet.</h1>
+  <p class="muted">
+    {% if lane == "subscriptions" %}
+    Memberships aren't open yet — we're still choosing payment rails.
+    {% elif lane == "donations" %}
+    We're not accepting donations yet — we're still choosing payment rails.
+    {% else %}
+    This drive isn't collecting contributions yet — we're still choosing payment rails.
+    {% endif %}
+  </p>
+</section>
+
+<article class="card narrow">
+  <h2>Nothing was charged.</h2>
+  <p>There was nothing to click through to, so nothing left your wallet. When payments open, you'll check out securely through our payment provider — and this page will say so loudly.</p>
+  {% if tier %}
+  <p class="muted">You were looking at <strong>{{ tier.name }}</strong>
+    {%- if tier.price_cents is not none %} — ${{ "%.2f"|format(tier.price_cents / 100) }}/month, when it opens{% endif %}. It'll be right here.</p>
+  {% endif %}
+  {% if campaign %}
+  <p class="muted">You were looking at the <strong>{{ campaign.title }}</strong> drive. It'll be right here.</p>
+  {% endif %}
+  <p><a class="btn btn-gold" href="{{ url_for('support.index') }}">Back to support the magazine</a></p>
+</article>
+{% endblock %}
