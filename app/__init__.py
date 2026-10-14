@@ -79,9 +79,14 @@ def create_app(config_object=None) -> Flask:
                     import seed_books as _books_module
                     _books_module._seed()
                     # Real piercing news + piercing podcasts (equal footing
-                    # with tattoo coverage).
-                    import seed_piercing as _piercing_module
-                    _piercing_module._seed()
+                    # with tattoo coverage). Guarded: the seed module may
+                    # land in a later commit than this wiring.
+                    try:
+                        import seed_piercing as _piercing_module
+                    except ImportError:
+                        _piercing_module = None
+                    if _piercing_module is not None:
+                        _piercing_module._seed()
         finally:
             from .db import close_db
             close_db()
@@ -90,6 +95,7 @@ def create_app(config_object=None) -> Flask:
     # Blueprint registration (local imports: keep package import light).
     from .public import public_bp
     from .podcasts import podcast_bp
+    from .books import book_bp
     from .directory import directory_bp
     from .claims import claims_bp
     from .account import account_bp

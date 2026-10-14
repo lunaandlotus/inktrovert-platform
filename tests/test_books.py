@@ -182,3 +182,98 @@ def test_textbook_notify_requires_csrf_when_enabled(client, app):
     rv = client.post("/books/textbook/notify",
                      data={"name": "X", "email": "x@example.com"})
     assert rv.status_code == 400
+
+
+# ---------------------------------------------------------------------------
+# Owner CRUD: "this needs to be editable by me."
+# ---------------------------------------------------------------------------
+
+def _book_payload(**over):
+    data = {
+        "title": "Owner Test Book", "slug": "", "author": "Test Author",
+        "publisher": "Test Press", "year": "2020", "isbn": "9780000000000",
+        "craft": "tattoo", "audience": "professionals", "kind": "guide",
+        "description": "A test book.", "why_relevant": "Because testing.",
+        "cover_image": "", "buy_url": "https://example.com/buy",
+        "audiobook_url": "", "sort_order": "5", "is_active": "on",
+    }
+    data.update(over)
+    return data
+
+
+def test_owner_books_list_requires_owner(app, owner_client):
+    anon = app.test_client()
+    assert anon.get("/owner/books").status_code in (302, 403)
+    rv = owner_client.get("/owner/books")
+    assert rv.status_code == 200
+
+
+def test_owner_can_create_book(owner_client, app):
+    rv = owner_client.post("/owner/books/new", data=_book_payload(),
+                           follow_redirects=False)
+    assert rv.status_code == 302
+    from app.db import get_db
+    with app.app_context():
+        book = get_db().query(Book).filter_by(title="Owner Test Book").one()
+        assert book.slug == "owner-test-book"
+        assert book.craft == "tattoo" and book.kind == "guide"
+        assert book.is_active is True and book.sort_order == 5
+
+
+def test_owner_create_requires_title(owner_client, app):
+    rv = owner_client.post("/owner/books/new", data=_book_payload(title=""))
+    assert rv.status_code == 200
+    assert b"A title is required" in rv.data
+
+
+def test_owner_can_edit_book_and_featured_order(owner_client, app):
+    _seed_books(app)
+    from app.db import get_db
+    with app.app_context():
+        book = get_db().query(Book).filter_by(slug="tattooing-a-to-z").one()
+        book_id = book.id
+    rv = owner_client.post(
+        f"/owner/books/{book_id}/edit",
+        data=_book_payload(title="Tattooing A to Z (2nd ed.)",
+                           is_featured="on", sort_order="1",
+                           has_audiobook="on",
+                           audiobook_url="https://example.com/audio"),
+        follow_redirects=False)
+    assert rv.status_code == 302
+    with app.app_context():
+        book = get_db().query(Book).get(book_id)
+        assert book.title == "Tattooing A to Z (2nd ed.)"
+        assert book.is_featured is True and book.sort_order == 1
+        assert book.has_audiobook is True
+
+
+def test_owner_audiobook_guard_needs_link(owner_client, app):
+    _seed_books(app)
+    from app.db import get_db
+    with app.app_context():
+        book_id = get_db().query(Book).filter_by(
+            slug="tattooing-a-to-z").one().id
+    rv = owner_client.post(
+        f"/owner/books/{book_id}/edit",
+        data=_book_payload(has_audiobook="on", audiobook_url=""))
+    assert rv.status_code == 200
+    assert b"verified really exist" in rv.data
+
+
+def test_owner_can_delete_book(owner_client, app):
+    _seed_books(app)
+    from app.db import get_db
+    with app.app_context():
+        book_id = get_db().query(Book).filter_by(
+            slug="forever-the-new-tattoo").one().id
+    rv = owner_client.post(f"/owner/books/{book_id}/delete",
+                           follow_redirects=False)
+    assert rv.status_code == 302
+    with app.app_context():
+        assert get_db().query(Book).get(book_id) is None
+
+
+def test_owner_books_links_visible_on_dashboard(owner_client):
+    rv = owner_client.get("/owner/")
+    assert rv.status_code == 200
+    assert b"Manage books" in rv.data
