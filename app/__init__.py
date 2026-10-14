@@ -95,7 +95,6 @@ def create_app(config_object=None) -> Flask:
     # Blueprint registration (local imports: keep package import light).
     from .public import public_bp
     from .podcasts import podcast_bp
-    from .books import book_bp
     from .directory import directory_bp
     from .claims import claims_bp
     from .account import account_bp

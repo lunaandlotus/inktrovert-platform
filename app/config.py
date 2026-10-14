@@ -12,10 +12,9 @@ class Config:
     SECRET_KEY = os.environ.get("SECRET_KEY", "dev-only-change-me")
     DEBUG = _bool("FLASK_DEBUG", False)
 
-    DATABASE_URL = os.environ.get(
-        "DATABASE_URL",
+    DATABASE_URL = os.environ.get("DATABASE_URL") or (
         "sqlite:///" + os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
-                                    "instance", "inktrovert.db"),
+                                    "instance", "inktrovert.db")
     )
 
     # Server-side session auth (mirrors luna-lotus-portals/app/auth.py).
