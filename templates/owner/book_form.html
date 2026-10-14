@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+{% block title %}{% if is_new %}New book{% else %}Edit book{% endif %} — {{ site_name }}{% endblock %}
+{% block content %}
+<div class="section-kicker">Owner desk · Books</div>
+<p><a href="{{ url_for('owner.books') }}">&larr; Back to books</a></p>
+<h1>{% if is_new %}New book{% else %}Edit book{% endif %}</h1>
+
+<form method="post">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <div class="form-group">
+    <label for="title">Title</label>
+    <input type="text" id="title" name="title" value="{{ request.form.get('title', book.title or '') }}" maxlength="250" required>
+  </div>
+  <div class="form-row">
+    <div class="form-group">
+      <label for="slug">Slug</label>
+      <input type="text" id="slug" name="slug" value="{{ request.form.get('slug', book.slug or '') }}" maxlength="270">
+      <p class="hint">Left blank, it's made from the title.</p>
+    </div>
+    <div class="form-group">
+      <label for="author">Author</label>
+      <input type="text" id="author" name="author" value="{{ request.form.get('author', book.author or '') }}" maxlength="200">
+    </div>
+  </div>
+  <div class="form-row">
+    <div class="form-group">
+      <label for="publisher">Publisher</label>
+      <input type="text" id="publisher" name="publisher" value="{{ request.form.get('publisher', book.publisher or '') }}" maxlength="200">
+    </div>
+    <div class="form-group">
+      <label for="year">Year</label>
+      <input type="number" id="year" name="year" value="{{ request.form.get('year', book.year or '') }}" min="1800" max="2100">
+    </div>
+    <div class="form-group">
+      <label for="isbn">ISBN</label>
+      <input type="text" id="isbn" name="isbn" value="{{ request.form.get('isbn', book.isbn or '') }}" maxlength="30">
+    </div>
+  </div>
+  <div class="form-row">
+    <div class="form-group">
+      <label for="craft">Craft</label>
+      <select id="craft" name="craft">
+        {% for c in crafts %}
+        <option value="{{ c }}"{% if (request.form.get('craft') or book.craft or 'tattoo') == c %} selected{% endif %}>{{ c|title }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="form-group">
+      <label for="audience">Audience</label>
+      <select id="audience" name="audience">
+        {% for a in audiences %}
+        <option value="{{ a }}"{% if (request.form.get('audience') or book.audience or 'collectors') == a %} selected{% endif %}>{{ a|title }}</option>
+        {% endfor %}
+      </select>
+      <p class="hint">Collectors = enthusiasts · Professionals = working artists/piercers</p>
+    </div>
+    <div class="form-group">
+      <label for="kind">Shelf</label>
+      <select id="kind" name="kind">
+        {% for k in kinds %}
+        <option value="{{ k }}"{% if (request.form.get('kind') or book.kind or 'guide') == k %} selected{% endif %}>{{ k|title }}</option>
+        {% endfor %}
+      </select>
+      <p class="hint">Guide = reference · Artist = artist-published, for collectors · Textbook = training manual</p>
+    </div>
+  </div>
+  <div class="form-group">
+    <label for="description">Description</label>
+    <textarea id="description" name="description" rows="4">{{ request.form.get('description', book.description or '') }}</textarea>
+  </div>
+  <div class="form-group">
+    <label for="why_relevant">Why it's on this shelf</label>
+    <textarea id="why_relevant" name="why_relevant" rows="3">{{ request.form.get('why_relevant', book.why_relevant or '') }}</textarea>
+    <p class="hint">One or two plainspoken sentences on why it matters to tattooists or piercers.</p>
+  </div>
+  <div class="form-group">
+    <label for="cover_image">Cover image path</label>
+    <input type="text" id="cover_image" name="cover_image" value="{{ request.form.get('cover_image', book.cover_image or '') }}" maxlength="500" placeholder="img/covers/example.jpg">
+    <p class="hint">Relative path under the uploads/static dir. Blank shows a styled placeholder.</p>
+  </div>
+  <div class="form-row">
+    <div class="form-group">
+      <label for="buy_url">Buy link</label>
+      <input type="url" id="buy_url" name="buy_url" value="{{ request.form.get('buy_url', book.buy_url or '') }}" maxlength="500" placeholder="https://…">
+    </div>
+    <div class="form-group">
+      <label for="audiobook_url">Audiobook link</label>
+      <input type="url" id="audiobook_url" name="audiobook_url" value="{{ request.form.get('audiobook_url', book.audiobook_url or '') }}" maxlength="500" placeholder="https://…">
+    </div>
+  </div>
+  <div class="form-group">
+    <label><input type="checkbox" name="has_audiobook"{% if request.form.get('has_audiobook') or (request.method != 'POST' and book.has_audiobook) %} checked{% endif %}> Audiobook edition exists</label>
+    <p class="hint">Only check this when you've verified a real audio edition exists.</p>
+  </div>
+  <div class="form-row">
+    <div class="form-group">
+      <label><input type="checkbox" name="is_featured"{% if request.form.get('is_featured') or (request.method != 'POST' and book.is_featured) %} checked{% endif %}> Featured pick</label>
+      <p class="hint">Up to 3 featured books lead the landing page.</p>
+    </div>
+    <div class="form-group">
+      <label><input type="checkbox" name="is_active"{% if is_new or request.form.get('is_active') or (request.method != 'POST' and book.is_active) %} checked{% endif %}> Active (visible on the site)</label>
+    </div>
+    <div class="form-group">
+      <label for="sort_order">Shelf order</label>
+      <input type="number" id="sort_order" name="sort_order" value="{{ request.form.get('sort_order', book.sort_order if book.sort_order is not none else 0) }}" min="0">
+      <p class="hint">Lower numbers show first.</p>
+    </div>
+  </div>
+  <button type="submit" class="btn btn-gold">Save book</button>
+</form>
+
+{% if not is_new %}
+<form method="post" action="{{ url_for('owner.book_delete', book_id=book.id) }}" style="margin-top: 24px;"
+      onsubmit="return confirm('Delete “{{ book.title }}”? This cannot be undone.');">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <button type="submit" class="btn btn-sm" style="border-color: var(--danger); color: var(--danger);">Delete this book</button>
+</form>
+{% endif %}
+{% endblock %}

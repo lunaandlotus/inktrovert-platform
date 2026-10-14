@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Books — {{ site_name }}{% endblock %}
+{% block content %}
+<div class="section-kicker">Owner desk</div>
+<h1>Books</h1>
+<p><a href="{{ url_for('owner.book_new') }}" class="btn btn-sm btn-gold">New book</a></p>
+
+{% if book_rows %}
+<table class="plain">
+  <thead>
+    <tr><th>Order</th><th>Title</th><th>Craft</th><th>Shelf</th><th>Audience</th><th>Flags</th><th></th></tr>
+  </thead>
+  <tbody>
+    {% for b in book_rows %}
+    <tr>
+      <td>{{ b.sort_order }}</td>
+      <td><a href="{{ url_for('owner.book_edit', book_id=b.id) }}">{{ b.title }}</a><br>
+        <span class="meta">{{ b.author }}</span></td>
+      <td><span class="badge">{{ b.craft }}</span></td>
+      <td><span class="badge">{{ b.kind }}</span></td>
+      <td><span class="badge">{{ b.audience }}</span></td>
+      <td>
+        {% if b.is_featured %}<span class="badge" style="border-color: var(--gold); color: var(--gold-deep);">featured</span>{% endif %}
+        {% if b.has_audiobook %}<span class="badge">audiobook</span>{% endif %}
+        {% if not b.is_active %}<span class="badge">inactive</span>{% endif %}
+      </td>
+      <td><a href="{{ url_for('owner.book_edit', book_id=b.id) }}" class="btn btn-sm">Edit</a></td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+<p class="hint">Lower order numbers show first. Featured books (up to 3) lead the landing page.</p>
+{% else %}
+<p class="empty">No books yet. <a href="{{ url_for('owner.book_new') }}">Add the first one</a>.</p>
+{% endif %}
+{% endblock %}

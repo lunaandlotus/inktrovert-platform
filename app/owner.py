@@ -15,7 +15,8 @@ from flask import (Blueprint, flash, g, redirect, render_template, request,
 from . import leads
 from .auth import require_csrf, role_required
 from .db import get_db
-from .models import (LEAD_STATUSES, STORY_CATEGORIES, ClaimRequest, Event,
+from .models import (BOOK_AUDIENCES, BOOK_CRAFTS, BOOK_KINDS, LEAD_STATUSES,
+                     STORY_CATEGORIES, Book, ClaimRequest, Event,
                      FundraisingCampaign, Issue, NewsletterEdition,
                      PodcastEpisode, PodcastSeries, Profile, Story, StoryLead,
                      SubscriptionTier, utcnow)
@@ -79,6 +80,7 @@ def dashboard():
     draft_stories = db.query(Story).filter_by(is_published=False).count()
     issue_count = db.query(Issue).count()
     episode_count = db.query(PodcastEpisode).count()
+    book_count = db.query(Book).count()
 
     new_leads = (db.query(StoryLead).filter_by(status="new")
                  .order_by(StoryLead.found_date.desc()).limit(5).all())
@@ -97,6 +99,7 @@ def dashboard():
         draft_stories=draft_stories,
         issue_count=issue_count,
         episode_count=episode_count,
+        book_count=book_count,
         new_leads=new_leads,
         pending_claim_list=pending_claim_list,
         pending_event_list=pending_event_list,
@@ -560,6 +563,109 @@ def episode_edit(episode_id: int):
         "owner/episode_form.html", episode=episode, series=episode.series,
         is_new=False, stories=stories, profiles=profiles,
     )
+
+
+# ---------------------------------------------------------------------------
+# Books — full CRUD: new/edit/delete, featured picks, shelf order
+# ---------------------------------------------------------------------------
+
+@owner_bp.route("/books")
+@role_required("platform_owner")
+def books():
+    db = get_db()
+    book_rows = db.query(Book).order_by(Book.sort_order, Book.title).all()
+    return render_template("owner/books.html", book_rows=book_rows)
+
+
+def _book_form_common(form, book: Book) -> str | None:
+    title = (form.get("title") or "").strip()
+    if not title:
+        return "A title is required."
+    book.title = title
+    slug_in = (form.get("slug") or "").strip()
+    book.slug = _unique_slug(Book, _slugify(slug_in or title),
+                            exclude_id=book.id or None)
+    book.author = (form.get("author") or "").strip()
+    book.publisher = (form.get("publisher") or "").strip()
+    book.year = _parse_int(form.get("year"), None)
+    book.isbn = (form.get("isbn") or "").strip()
+    craft = (form.get("craft") or "tattoo").strip()
+    book.craft = craft if craft in BOOK_CRAFTS else "tattoo"
+    audience = (form.get("audience") or "collectors").strip()
+    book.audience = audience if audience in BOOK_AUDIENCES else "collectors"
+    kind = (form.get("kind") or "guide").strip()
+    book.kind = kind if kind in BOOK_KINDS else "guide"
+    book.description = (form.get("description") or "").strip()
+    book.why_relevant = (form.get("why_relevant") or "").strip()
+    book.cover_image = (form.get("cover_image") or "").strip().lstrip("/")
+    book.buy_url = (form.get("buy_url") or "").strip()
+    book.has_audiobook = _is_checked(form, "has_audiobook")
+    book.audiobook_url = (form.get("audiobook_url") or "").strip()
+    if book.has_audiobook and not book.audiobook_url:
+        return ("You marked an audiobook — add its link, or uncheck the box. "
+                "Only mark audiobooks you have verified really exist.")
+    book.is_featured = _is_checked(form, "is_featured")
+    book.is_active = _is_checked(form, "is_active")
+    book.sort_order = _parse_int(form.get("sort_order"), 0) or 0
+    return None
+
+
+@owner_bp.route("/books/new", methods=["GET", "POST"])
+@role_required("platform_owner")
+@require_csrf
+def book_new():
+    db = get_db()
+    book = Book(craft="tattoo", audience="collectors", kind="guide")
+    if request.method == "POST":
+        error = _book_form_common(request.form, book)
+        if error:
+            flash(error, "error")
+        else:
+            db.add(book)
+            db.commit()
+            flash("Book saved.", "success")
+            return redirect(url_for("owner.book_edit", book_id=book.id))
+    return render_template("owner/book_form.html", book=book, is_new=True,
+                           crafts=BOOK_CRAFTS, audiences=BOOK_AUDIENCES,
+                           kinds=BOOK_KINDS)
+
+
+@owner_bp.route("/books/<int:book_id>/edit", methods=["GET", "POST"])
+@role_required("platform_owner")
+@require_csrf
+def book_edit(book_id: int):
+    db = get_db()
+    book = db.get(Book, book_id)
+    if book is None:
+        flash("That book is gone.", "error")
+        return redirect(url_for("owner.books"))
+    if request.method == "POST":
+        error = _book_form_common(request.form, book)
+        if error:
+            flash(error, "error")
+        else:
+            db.commit()
+            flash("Book saved.", "success")
+            return redirect(url_for("owner.book_edit", book_id=book.id))
+    return render_template("owner/book_form.html", book=book, is_new=False,
+                           crafts=BOOK_CRAFTS, audiences=BOOK_AUDIENCES,
+                           kinds=BOOK_KINDS)
+
+
+@owner_bp.route("/books/<int:book_id>/delete", methods=["POST"])
+@role_required("platform_owner")
+@require_csrf
+def book_delete(book_id: int):
+    db = get_db()
+    book = db.get(Book, book_id)
+    if book is None:
+        flash("That book is gone.", "error")
+    else:
+        title = book.title
+        db.delete(book)
+        db.commit()
+        flash(f"“{title}” was deleted.", "success")
+    return redirect(url_for("owner.books"))
 
 
 # ---------------------------------------------------------------------------
