@@ -28,3 +28,7 @@ services:
         generateValue: true
       - key: SESSION_COOKIE_SECURE
         value: "1"
+      # Set manually in the Render dashboard (never in this public repo).
+      # sync:false keeps blueprint syncs from overwriting the value.
+      - key: DATABASE_URL
+        sync: false

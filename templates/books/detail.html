@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block title %}{{ book.title }} — Books — {{ site_name }}{% endblock %}
+
+{% block content %}
+<p class="meta" style="margin-bottom: 8px;"><a href="{{ url_for('books.index') }}">Books</a> · {{ craft_label(book.craft) }}</p>
+
+<article style="display: grid; grid-template-columns: minmax(180px, 240px) 1fr; gap: 28px; margin-top: 12px;">
+  <div>
+    {% if book.cover_image %}
+      <img src="{{ book.cover_image }}" alt="Cover of {{ book.title }}" style="width: 100%; aspect-ratio: 3/4; object-fit: cover;">
+    {% else %}
+      <div aria-hidden="true" style="width: 100%; aspect-ratio: 3/4; background: linear-gradient(150deg, var(--ink) 55%, #2a2419 100%); border-top: 4px solid var(--gold); display: flex; align-items: center; justify-content: center; padding: 20px;">
+        <span style="color: var(--gold); font-size: 3rem; font-weight: 700;">{{ book.title[:1] }}</span>
+      </div>
+    {% endif %}
+  </div>
+
+  <div>
+    <p class="section-kicker" style="color: var(--gold);">{{ kind_label(book.kind) }} · for {{ audience_label(book.audience)|lower }}</p>
+    <h1 style="margin-top: 0;">{{ book.title }}</h1>
+    {% if book.author %}<p class="byline" style="font-size: 1.1rem;">by {{ book.author }}</p>{% endif %}
+    {% if book.publisher or book.year or book.isbn %}
+      <p class="meta">
+        {% if book.publisher %}{{ book.publisher }}{% endif %}{% if book.year %} · {{ book.year }}{% endif %}{% if book.isbn %} · ISBN {{ book.isbn }}{% endif %}
+      </p>
+    {% endif %}
+
+    {% if book.description %}<p>{{ book.description }}</p>{% endif %}
+
+    {% if book.why_relevant %}
+      <h2 style="font-size: 1.05rem; margin-top: 20px;">Why it's on this shelf</h2>
+      <p>{{ book.why_relevant }}</p>
+    {% endif %}
+
+    <h2 style="font-size: 1.05rem; margin-top: 20px;">Formats</h2>
+    <p class="meta">
+      Print{% if book.has_audiobook %} · <span style="color: var(--gold-deep); font-weight: bold;">Audiobook edition verified</span>{% endif %}
+    </p>
+
+    {% if book.buy_url or book.audiobook_url %}
+      <h2 style="font-size: 1.05rem; margin-top: 20px;">Where to get it</h2>
+      <p>
+        {% if book.buy_url %}<a class="btn btn-sm" href="{{ book.buy_url }}" rel="noopener" target="_blank">Buy the book</a>{% endif %}
+        {% if book.audiobook_url %} <a class="btn btn-sm" href="{{ book.audiobook_url }}" rel="noopener" target="_blank">Listen to the audiobook</a>{% endif %}
+      </p>
+      <p class="meta">Links go straight to the seller or publisher — no affiliate tricks.</p>
+    {% endif %}
+  </div>
+</article>
+
+{% if more %}
+<section style="margin-top: 36px;">
+  <p class="section-kicker">Keep browsing</p>
+  <div class="grid">
+    {% for book in more %}
+      {% include "books/_card.html" %}
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+{% endblock %}

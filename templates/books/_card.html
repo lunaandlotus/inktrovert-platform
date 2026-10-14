@@ -1,0 +1,16 @@
+{# Shared book card. Expects `book` in context. #}
+<article class="card">
+  {% if book.cover_image %}
+    <img src="{{ book.cover_image }}" alt="Cover of {{ book.title }}" style="width: 100%; aspect-ratio: 3/4; object-fit: cover; margin-bottom: 10px;">
+  {% else %}
+    <div aria-hidden="true" style="width: 100%; aspect-ratio: 3/4; margin-bottom: 10px; background: linear-gradient(150deg, var(--ink) 55%, #2a2419 100%); border-top: 3px solid var(--gold); display: flex; align-items: center; justify-content: center; padding: 16px;">
+      <span style="color: var(--gold); font-size: 2.2rem; font-weight: 700; text-align: center; line-height: 1.2;">{{ book.title[:1] }}</span>
+    </div>
+  {% endif %}
+  <p class="meta">{{ craft_label(book.craft) }} · {{ kind_label(book.kind) }}{% if book.has_audiobook %} · <span style="color: var(--gold-deep);">Audiobook</span>{% endif %}</p>
+  <h3 style="margin-top: 4px;">
+    <a href="{{ url_for('books.detail', slug=book.slug) }}">{{ book.title }}</a>
+  </h3>
+  {% if book.author %}<p class="byline">by {{ book.author }}</p>{% endif %}
+  <p class="meta"><a href="{{ url_for('books.detail', slug=book.slug) }}">Details &amp; where to get it</a></p>
+</article>

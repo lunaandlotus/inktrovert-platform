@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block title %}Angie Valentin's tattoo textbook — coming soon — {{ site_name }}{% endblock %}
+
+{% block content %}
+<section class="hero" style="background: var(--ink); color: var(--paper); padding: 56px 32px; margin: 0 -16px;">
+  <p class="section-kicker" style="color: var(--gold);">Coming soon · from Luna &amp; Lotus Piercing &amp; Ink</p>
+  <h1 style="color: var(--paper); font-size: 2.6rem; max-width: 16em;">Angie Valentin's tattoo textbook</h1>
+  <p style="color: #cfc9bb; max-width: 38em; font-size: 1.1rem;">The complete training
+  textbook for tattoo apprentices — twelve chapters across technique, safety,
+  art, and business. Written from behind the chair, for the next generation
+  of artists.</p>
+  <p style="margin-top: 20px;">
+    <a class="btn btn-gold" href="#notify">Notify me at launch</a>
+  </p>
+</section>
+
+<section style="margin-top: 36px;">
+  <p class="section-kicker" style="color: var(--gold);">What it covers</p>
+  <div class="grid">
+    <article class="card">
+      <h3>Technique</h3>
+      <p>The hands-on craft — how the work is actually done, from first principles to finished pieces.</p>
+    </article>
+    <article class="card">
+      <h3>Safety</h3>
+      <p>Sterile practice, bloodborne-pathogen sense, and the habits that keep clients and artists safe.</p>
+    </article>
+    <article class="card">
+      <h3>Art</h3>
+      <p>Design, composition, and the visual judgment that turns a tattooer into an artist.</p>
+    </article>
+    <article class="card">
+      <h3>Business</h3>
+      <p>Running the shop side — clients, pricing, professionalism, and building a career that lasts.</p>
+    </article>
+  </div>
+</section>
+
+<section style="margin-top: 36px;">
+  <p class="section-kicker" style="color: var(--gold);">Who it's for</p>
+  <p>Apprentices starting their training, working artists who want a structured
+  reference, and shop owners training the next chair. Twelve chapters, one
+  straight-talking voice — the same plain teaching Angie's apprentices get
+  in the studio.</p>
+</section>
+
+<section id="notify" class="card" style="margin-top: 36px; border-top: 4px solid var(--gold);">
+  <h2 style="margin-top: 0;">Be first to know</h2>
+  <p>The textbook isn't published yet. Leave your email and you'll hear the
+  moment it launches — no spam, just the announcement.</p>
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      {% for category, message in messages %}
+        <p class="{% if category == 'error' %}error{% else %}ok{% endif %}">{{ message }}</p>
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
+  <form method="post" action="{{ url_for('books.textbook_notify') }}" style="display: flex; flex-wrap: wrap; gap: 8px; max-width: 520px; margin-top: 12px;">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <input type="text" name="name" placeholder="Your name" aria-label="Your name" style="flex: 1 1 160px;">
+    <input type="email" name="email" placeholder="you@example.com" required aria-label="Email address" style="flex: 2 1 220px;">
+    <button class="btn btn-gold" type="submit">Notify me</button>
+  </form>
+</section>
+
+<p class="meta" style="margin-top: 24px;"><a href="{{ url_for('books.index') }}">← Back to all books</a></p>
+{% endblock %}

@@ -75,6 +75,13 @@ def create_app(config_object=None) -> Flask:
                     # First real studio: Luna & Lotus Piercing & Ink (featured).
                     import seed_studio as _studio_module
                     _studio_module._seed()
+                    # Books vertical: verified books for the craft.
+                    import seed_books as _books_module
+                    _books_module._seed()
+                    # Real piercing news + piercing podcasts (equal footing
+                    # with tattoo coverage).
+                    import seed_piercing as _piercing_module
+                    _piercing_module._seed()
         finally:
             from .db import close_db
             close_db()
@@ -92,6 +99,7 @@ def create_app(config_object=None) -> Flask:
 
     app.register_blueprint(public_bp)
     app.register_blueprint(podcast_bp)
+    app.register_blueprint(book_bp)
     app.register_blueprint(directory_bp)
     app.register_blueprint(claims_bp)
     app.register_blueprint(account_bp)

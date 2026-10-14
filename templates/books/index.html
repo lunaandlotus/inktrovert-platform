@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+
+{% block title %}Books — {{ site_name }}{% endblock %}
+
+{% block content %}
+<section class="hero">
+  <p class="section-kicker" style="color: var(--gold);">The reading room</p>
+  <h1>Books worth your shelf</h1>
+  <p>Real books for the craft — tattoo and piercing technique, history and
+  art, the business of running a shop, and the flash books and monographs
+  artists publish for their collectors. Every title verified, nothing made up.</p>
+  <p class="meta" style="margin-top: 12px;">
+    Browse:
+    <a href="{{ url_for('books.index') }}"{% if not active_craft and not q %} style="font-weight: bold;"{% endif %}>All books</a>
+    {% for code, label in crafts %}
+      ·
+      <a href="{{ url_for('books.index', craft=code) }}"{% if active_craft == code %} style="font-weight: bold;"{% endif %}>{{ label }}</a>
+    {% endfor %}
+  </p>
+  <form method="get" action="{{ url_for('books.index') }}" style="margin-top: 12px; display: flex; gap: 8px; max-width: 420px;">
+    <input type="search" name="q" value="{{ q or '' }}" placeholder="Search title or author…" aria-label="Search books" style="flex: 1;">
+    <button class="btn btn-sm" type="submit">Search</button>
+  </form>
+</section>
+
+{# --- Her textbook: the coming-soon banner (priority) --- #}
+<section class="card" style="margin-top: 28px; border-left: 4px solid var(--gold); background: var(--ink); color: var(--paper);">
+  <p class="section-kicker" style="color: var(--gold);">Coming soon · from Luna &amp; Lotus</p>
+  <h2 style="margin-top: 0; color: var(--paper);">Angie Valentin's tattoo textbook</h2>
+  <p style="color: #cfc9bb;">The complete training textbook for tattoo apprentices — twelve chapters
+  across technique, safety, art, and business, written from behind the chair.
+  Not published yet. Be first to know when it lands.</p>
+  <p><a class="btn btn-gold" href="{{ url_for('books.her_textbook') }}">About the textbook</a></p>
+</section>
+
+{% if featured and not active_craft and not q %}
+<section style="margin-top: 32px;">
+  <p class="section-kicker">Featured picks</p>
+  <div class="grid">
+    {% for book in featured %}
+      {% include "books/_card.html" %}
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+
+{% if results %}
+<section style="margin-top: 32px;">
+  <p class="section-kicker">
+    {% if q %}Results for “{{ q }}”{% elif active_craft %}{{ craft_label(active_craft) }} books{% else %}The shelves{% endif %}
+  </p>
+  <div class="grid">
+    {% for book in results %}
+      {% include "books/_card.html" %}
+    {% endfor %}
+  </div>
+</section>
+{% elif q or active_craft %}
+<p class="empty">No books found — try another search.</p>
+{% endif %}
+
+{% if not active_craft and not q %}
+  {% if textbooks %}
+  <section style="margin-top: 36px;">
+    <p class="section-kicker" style="color: var(--gold);">Textbooks · for artists</p>
+    <h2 style="margin-top: 0;">Study the craft</h2>
+    <p>Published training manuals — technique, safety, and the apprenticeship
+    path, written by people who teach it.</p>
+    <div class="grid">
+      {% for book in textbooks %}
+        {% include "books/_card.html" %}
+      {% endfor %}
+    </div>
+  </section>
+  {% endif %}
+
+  {% if artist_books %}
+  <section style="margin-top: 36px;">
+    <p class="section-kicker" style="color: var(--gold);">Artist books · for collectors</p>
+    <h2 style="margin-top: 0;">From the artists' own shelves</h2>
+    <p>Flash collections, monographs, and memoirs published by tattoo artists
+    themselves — made for fans and collectors.</p>
+    <div class="grid">
+      {% for book in artist_books %}
+        {% include "books/_card.html" %}
+      {% endfor %}
+    </div>
+  </section>
+  {% endif %}
+{% endif %}
+{% endblock %}

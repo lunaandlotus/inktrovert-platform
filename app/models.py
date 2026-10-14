@@ -620,6 +620,10 @@ class BookingInquiry(Base):
 
 PODCAST_AUDIENCES = ("collectors", "professionals")
 
+# What the show is about: tattoo, piercing, or both. Nullable — older rows
+# stay untagged; the piercing seed backfills the curated series.
+PODCAST_TOPICS = ("tattoo", "piercing", "both")
+
 
 class PodcastSeries(Base):
     __tablename__ = "podcast_series"
@@ -628,6 +632,8 @@ class PodcastSeries(Base):
     slug: Mapped[str] = mapped_column(String(220), unique=True, nullable=False)
     # collectors / professionals
     audience: Mapped[str] = mapped_column(String(20), nullable=False)
+    # tattoo / piercing / both (see PODCAST_TOPICS)
+    topic: Mapped[str | None] = mapped_column(String(20), nullable=True, index=True)
     description: Mapped[str] = mapped_column(Text, default="", nullable=False)
     cover_image: Mapped[str] = mapped_column(String(500), default="", nullable=False)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
@@ -684,5 +690,61 @@ class SupplyListing(Base):
     price_cents: Mapped[int | None] = mapped_column(Integer, nullable=True)
     status: Mapped[str] = mapped_column(String(20), default="draft", nullable=False)
     # draft / listed / sold / removed
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow,
+                                                 nullable=False)
+
+
+# ---------------------------------------------------------------------------
+# Books — magazine/editorial layer, same standing as podcasts.
+#
+# Shelves: textbooks (training manuals for artists/pros), artist books
+# (flash books & monographs published by artists, for collectors), guides
+# (reference/technique/history), and business (running the shop).
+# Crafts: tattoo / piercing / business. Audiences mirror podcasts:
+# collectors (enthusiasts) vs professionals (working artists/piercers).
+# Audiobook flags are set ONLY for verified audio editions.
+# ---------------------------------------------------------------------------
+
+BOOK_CRAFTS = ("tattoo", "piercing", "business")
+BOOK_AUDIENCES = ("collectors", "professionals")
+BOOK_KINDS = ("guide", "artist", "textbook")
+
+
+class Book(Base):
+    __tablename__ = "books"
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    title: Mapped[str] = mapped_column(String(250), nullable=False)
+    slug: Mapped[str] = mapped_column(String(270), unique=True, nullable=False)
+    author: Mapped[str] = mapped_column(String(200), default="", nullable=False)
+    publisher: Mapped[str] = mapped_column(String(200), default="", nullable=False)
+    year: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    isbn: Mapped[str] = mapped_column(String(30), default="", nullable=False)
+    # tattoo / piercing / business
+    craft: Mapped[str] = mapped_column(String(20), nullable=False, index=True)
+    # collectors / professionals
+    audience: Mapped[str] = mapped_column(String(20), nullable=False, index=True)
+    # guide / artist / textbook
+    kind: Mapped[str] = mapped_column(String(20), nullable=False, index=True)
+    description: Mapped[str] = mapped_column(Text, default="", nullable=False)
+    # 1-2 plainspoken sentences on why it matters to tattooists/piercers.
+    why_relevant: Mapped[str] = mapped_column(Text, default="", nullable=False)
+    cover_image: Mapped[str] = mapped_column(String(500), default="", nullable=False)
+    buy_url: Mapped[str] = mapped_column(String(500), default="", nullable=False)
+    # Set ONLY when a real audio edition was verified to exist.
+    has_audiobook: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    audiobook_url: Mapped[str] = mapped_column(String(500), default="", nullable=False)
+    is_featured: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+    sort_order: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow,
+                                                 nullable=False)
+
+
+class TextbookNotify(Base):
+    """Email signups for Angie Valentin's coming-soon apprentice textbook."""
+    __tablename__ = "textbook_notify"
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    name: Mapped[str] = mapped_column(String(120), default="", nullable=False)
+    email: Mapped[str] = mapped_column(String(254), nullable=False, index=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow,
                                                  nullable=False)
