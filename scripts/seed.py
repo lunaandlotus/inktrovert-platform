@@ -64,43 +64,6 @@ def _seed() -> None:
         artist = register_user("artist@inktrovert.local", "InktrovertPro1!",
                                "Maya Reyes", roles=["tattoo_artist", "collector"])
 
-        # --- Editorial: issue + stories ------------------------------------
-        issue = Issue(number=1, title="Launch Issue", slug="issue-1-launch",
-                      blurb="The first Inktrovert industry issue: openings, "
-                            "aftercare science, and fine-line portfolios.",
-                      cover_image="img/ph-1.svg", is_published=True,
-                      published_at=utcnow())
-        db.add(issue)
-        db.flush()
-
-        stories = [
-            ("Welcome to Inktrovert", "news",
-             "Why the industry needed one trusted home for news, discovery, and craft.",
-             "This is the seed story body. The real first issue will say it better: "
-             "collectors deserve honest discovery, and professionals deserve a "
-             "publication that treats the craft seriously.", True),
-            ("Aftercare, honestly: what actually helps ink heal", "news",
-             "Wash, balm, wrap — what the evidence and the old hands agree on.",
-             "Seed body: gentle washing, thin balm layers, and leaving the wrap "
-             "on as directed. Your artist's aftercare sheet is the final word.", True),
-            ("Studio spotlight: a Casper shop built on referrals", "spotlight",
-             "How one small studio keeps its books full without shouting.",
-             "Seed body: clean work, honest consults, and follow-through. "
-             "The rest is word of mouth.", True),
-            ("Draft: interview with a traveling piercer", "interview",
-             "Guest spots, sterile technique on the road, and reading a room.",
-             "Seed body — unpublished draft.", False),
-        ]
-        for i, (title, cat, excerpt, body, pub) in enumerate(stories):
-            slug = title.lower().replace(":", "").replace(",", "")
-            slug = "-".join(slug.split())[:200]
-            db.add(Story(
-                issue_id=issue.id if pub else None, title=title, slug=slug,
-                category=cat, excerpt=excerpt, body=body,
-                cover_image="img/ph-2.svg", author_name="Seed data",
-                sort_order=i, is_published=pub,
-                published_at=utcnow() if pub else None))
-
         # --- Events ----------------------------------------------------------
         # Real events only — no samples anywhere on the site.
         db.add(Event(

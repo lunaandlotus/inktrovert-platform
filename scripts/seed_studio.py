@@ -23,7 +23,7 @@ STUDIO_SLUG = "luna-lotus-piercing-ink"
 ARTIST_SLUG = "angie-valentin"
 OWNER_EMAIL = "owner@inktrovert.local"
 
-STUDIO_BIO = """Luna & Lotus Piercing & Ink is a professional tattoo and body piercing studio in Casper, Wyoming, owned and operated by Angie Valentin. Walk-ins are welcome and appointments come first — come as you are, leave with something that feels like you.
+STUDIO_BIO = """Luna & Lotus is Angie Valentin's tattoo and piercing studio in Casper, Wyoming. Custom tattoos, professional piercings, honest advice — walk-ins welcome, appointments come first.
 
 You'll find us at 1925 Oxford Lane, inside Wind Blown Beauty Salon & Spa.
 

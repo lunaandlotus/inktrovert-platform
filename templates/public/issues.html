@@ -10,7 +10,7 @@
 <div class="grid">
   {% for issue in issues %}
   <article class="card issue-card">
-    {% if issue.cover_image %}<img src="{{ issue.cover_image }}" alt="Cover of issue #{{ issue.number }}" class="card-cover">{% endif %}
+    {% if issue.cover_image %}<img src="{{ issue.cover_image|cover_url }}" alt="Cover of issue #{{ issue.number }}" class="card-cover">{% endif %}
     <h3><a href="{{ url_for('public.issue_detail', slug=issue.slug) }}">Issue #{{ issue.number }} — {{ issue.title }}</a></h3>
     {% if issue.blurb %}<p class="excerpt">{{ issue.blurb }}</p>{% endif %}
     <p class="meta">{% if issue.published_at %}{{ issue.published_at.strftime('%B %Y') }}{% endif %} · {{ issue.stories|selectattr('is_published')|list|length }} articles</p>

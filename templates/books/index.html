@@ -5,10 +5,10 @@
 {% block content %}
 <section class="hero">
   <p class="section-kicker" style="color: var(--gold);">The reading room</p>
-  <h1>Books worth your shelf</h1>
+  <h1>Books worth your shelf space</h1>
   <p>Real books for the craft — tattoo and piercing technique, history and
   art, the business of running a shop, and the flash books and monographs
-  artists publish for their collectors. Every title verified, nothing made up.</p>
+  artists publish for their collectors.</p>
   <p class="meta" style="margin-top: 12px;">
     Browse:
     <a href="{{ url_for('books.index') }}"{% if not active_craft and not q %} style="font-weight: bold;"{% endif %}>All books</a>

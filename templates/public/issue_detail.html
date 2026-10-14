@@ -8,20 +8,81 @@
 
 {% block content %}
 <p><a href="{{ url_for('public.issues') }}">&larr; All issues</a></p>
+{% endblock %}
 
+{% block full_bleed %}
+{% if issue.cover_image %}
+<header class="cover-fullbleed" style="background-image:url('{{ url_for('static', filename=issue.cover_image) if not issue.cover_image.startswith('http') else issue.cover_image }}')">
+  <div class="cover-overlay">
+    <p class="cover-kicker">Inktrovert Magazine</p>
+    <h1>Issue #{{ issue.number }}</h1>
+    <p class="cover-title">{{ issue.title }}</p>
+    {% if issue.blurb %}<p class="cover-blurb">{{ issue.blurb }}</p>{% endif %}
+    <p class="cover-meta">{% if issue.published_at %}{{ issue.published_at.strftime('%B %Y') }}{% endif %}</p>
+  </div>
+</header>
+{% else %}
 <header class="issue-header">
-  {% if issue.cover_image %}
-  <div class="issue-cover-bleed" style="background-image:url('{{ issue.cover_image }}')" role="img" aria-label="Cover of issue #{{ issue.number }}"></div>
-  {% endif %}
   <h1>Issue #{{ issue.number }}</h1>
   <h2>{{ issue.title }}</h2>
   {% if issue.blurb %}<p class="excerpt">{{ issue.blurb }}</p>{% endif %}
-  <p class="meta">{% if issue.published_at %}Published {{ issue.published_at.strftime('%B %d, %Y') }}{% endif %}</p>
-  <p>
+</header>
+{% endif %}
+
+<div class="wrap issue-body">
+  <p class="issue-actions">
     <a class="btn btn-sm" href="{{ url_for('public.issue_print', slug=issue.slug) }}">Print edition</a>
     <a class="btn btn-sm btn-gold" href="{{ url_for('public.issue_print_pdf', slug=issue.slug) }}">Download print PDF</a>
   </p>
-</header>
+
+{% if stories %}
+<section class="deck-section">
+  <h2>Flip through this issue</h2>
+  <div class="story-deck" id="storyDeck" data-count="{{ stories|length }}">
+    <div class="deck-cards">
+      {% for story in stories %}
+      <article class="deck-card{% if loop.first %} active{% endif %}" data-index="{{ loop.index0 }}">
+        {% if story.cover_image %}
+        <div class="deck-card-image" style="background-image:url('{{ url_for('static', filename=story.cover_image) if not story.cover_image.startswith('http') else story.cover_image }}')"></div>
+        {% endif %}
+        <div class="deck-card-body">
+          <span class="badge">{{ story.category.replace('-', ' ')|title }}</span>
+          <h3>{{ story.title }}</h3>
+          {% if story.excerpt %}<p>{{ story.excerpt }}</p>{% endif %}
+          <p><a class="btn btn-sm" href="{{ url_for('public.story_detail', slug=story.slug) }}">Read the story</a></p>
+        </div>
+      </article>
+      {% endfor %}
+    </div>
+    <div class="deck-controls">
+      <button type="button" class="deck-btn" id="deckPrev" aria-label="Previous story">&larr;</button>
+      <span class="deck-counter"><span id="deckCurrent">1</span> / {{ stories|length }}</span>
+      <button type="button" class="deck-btn" id="deckNext" aria-label="Next story">&rarr;</button>
+    </div>
+  </div>
+</section>
+<script>
+(function() {
+  var deck = document.getElementById('storyDeck');
+  if (!deck) return;
+  var cards = deck.querySelectorAll('.deck-card');
+  var current = 0;
+  var counter = document.getElementById('deckCurrent');
+  function show(i) {
+    current = (i + cards.length) % cards.length;
+    cards.forEach(function(c, idx) { c.classList.toggle('active', idx === current); });
+    counter.textContent = current + 1;
+  }
+  document.getElementById('deckPrev').addEventListener('click', function() { show(current - 1); });
+  document.getElementById('deckNext').addEventListener('click', function() { show(current + 1); });
+  deck.addEventListener('keydown', function(e) {
+    if (e.key === 'ArrowLeft') show(current - 1);
+    if (e.key === 'ArrowRight') show(current + 1);
+  });
+  deck.setAttribute('tabindex', '0');
+})();
+</script>
+{% endif %}
 
 {% if overview_stories %}
 <section>
@@ -29,7 +90,7 @@
   <p class="muted">The big stories, trends, and what's happening across the industry.</p>
   {% for story in overview_stories %}
   <article class="story-teaser">
-    {% if story.cover_image %}<img src="{{ story.cover_image }}" alt="" class="teaser-cover">{% endif %}
+    {% if story.cover_image %}<img src="{{ story.cover_image|cover_url }}" alt="" class="teaser-cover">{% endif %}
     <div>
       <span class="badge">{{ story.category.replace('-', ' ')|title }}</span>
       <h3><a href="{{ url_for('public.story_detail', slug=story.slug) }}">{{ story.title }}</a></h3>
@@ -48,7 +109,7 @@
   <h3><a href="{{ url_for('directory.state_hub', code=section.code) }}">{{ section.name }}</a></h3>
   {% for story in section.stories %}
   <article class="story-teaser">
-    {% if story.cover_image %}<img src="{{ story.cover_image }}" alt="" class="teaser-cover">{% endif %}
+    {% if story.cover_image %}<img src="{{ story.cover_image|cover_url }}" alt="" class="teaser-cover">{% endif %}
     <div>
       <span class="badge">{{ story.category.replace('-', ' ')|title }}</span>
       <h3><a href="{{ url_for('public.story_detail', slug=story.slug) }}">{{ story.title }}</a></h3>
@@ -65,4 +126,5 @@
 {% if not overview_stories and not state_sections %}
 <p class="empty">Articles for this issue are still being set in type.</p>
 {% endif %}
+</div>
 {% endblock %}

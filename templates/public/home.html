@@ -3,7 +3,7 @@
 {% block title %}Inktrovert{% endblock %}
 
 {% block content %}
-<section class="hero">
+<section class="hero hero-image" style="background-image:url('{{ url_for('static', filename='img/homepage-hero.jpg') }}')">
   <div class="hero-inner">
     <p class="section-kicker">The magazine for the tattoo &amp; piercing world</p>
     <h1>Inktrovert</h1>
@@ -19,7 +19,7 @@
 {% if latest_issue %}
 <section class="issue-feature">
   <div class="issue-feature-cover"
-       {% if latest_issue.cover_image %}style="background-image:url('{{ latest_issue.cover_image }}')"{% endif %}></div>
+       {% if latest_issue.cover_image %}style="background-image:url('{{ latest_issue.cover_image|cover_url }}')"{% endif %}></div>
   <div class="issue-feature-copy">
     <p class="section-kicker">Latest issue</p>
     <h2><a href="{{ url_for('public.issue_detail', slug=latest_issue.slug) }}">Issue #{{ latest_issue.number }} — {{ latest_issue.title }}</a></h2>
@@ -39,7 +39,7 @@
   <div class="grid">
     {% for story in stories %}
     <article class="card">
-      {% if story.cover_image %}<img src="{{ story.cover_image }}" alt="" class="card-cover">{% endif %}
+      {% if story.cover_image %}<img src="{{ story.cover_image|cover_url }}" alt="" class="card-cover">{% endif %}
       <span class="badge">{{ story.category.replace('-', ' ')|title }}</span>
       <h3><a href="{{ url_for('public.story_detail', slug=story.slug) }}">{{ story.title }}</a></h3>
       {% if story.excerpt %}<p class="excerpt">{{ story.excerpt }}</p>{% endif %}

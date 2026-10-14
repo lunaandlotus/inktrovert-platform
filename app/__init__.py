@@ -95,6 +95,16 @@ def create_app(config_object=None) -> Flask:
             close_db()
     init_auth(app)
 
+    @app.template_filter("cover_url")
+    def cover_url_filter(path):
+        """Resolve a cover image path: img/... -> /static/img/..., http URLs pass through."""
+        if not path:
+            return ""
+        if path.startswith(("http://", "https://", "/")):
+            return path
+        from flask import url_for
+        return url_for("static", filename=path)
+
     # Blueprint registration (local imports: keep package import light).
     from .public import public_bp
     from .podcasts import podcast_bp

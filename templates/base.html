@@ -47,6 +47,7 @@
   {% endif %}
 {% endwith %}
 
+{% block full_bleed %}{% endblock %}
 <main class="wrap">
   {% block content %}{% endblock %}
 </main>
@@ -64,7 +65,7 @@
       <a href="{{ url_for('support.index') }}">Support the magazine</a>
     </div>
   </div>
-  <div class="wrap footer-note muted">A magazine for the business and the customer.</div>
+  <div class="wrap footer-note muted">For the people who collect ink and the professionals who put it there.</div>
 </footer>
 {% block scripts %}{% endblock %}
 </body>

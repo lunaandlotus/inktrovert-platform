@@ -13,7 +13,7 @@
     {% if story.published_at %} · {{ story.published_at.strftime('%B %d, %Y') }}{% endif %}
     {% if story.issue and story.issue.is_published %} · from <a href="{{ url_for('public.issue_detail', slug=story.issue.slug) }}">Issue #{{ story.issue.number }}</a>{% endif %}
   </p>
-  {% if story.cover_image %}<img src="{{ story.cover_image }}" alt="" class="article-cover">{% endif %}
+  {% if story.cover_image %}<img src="{{ story.cover_image|cover_url }}" alt="" class="article-cover">{% endif %}
   {% if story.excerpt %}<p class="excerpt">{{ story.excerpt }}</p>{% endif %}
   <div class="article-body">{{ story.body|safe }}</div>
 </article>

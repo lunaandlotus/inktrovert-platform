@@ -489,21 +489,35 @@ def _seed() -> None:
                 slug="issue-2-the-current-fall-2026",
                 blurb="Real industry news, convention season, and what's "
                       "trending — October 2026.",
-                cover_image="img/ph-1.svg", is_published=True,
+                cover_image="img/issue-2-cover.jpg", is_published=True,
                 published_at=utcnow())
             db.add(issue)
             db.flush()
             added["issues"] += 1
+        elif issue.cover_image in ("img/ph-1.svg", "", None):
+            issue.cover_image = "img/issue-2-cover.jpg"
 
         # --- Stories -------------------------------------------------------
+        def _story_image(slug, title, category):
+            t = (slug + " " + title + " " + category).lower()
+            if "pierc" in t:
+                return "img/story-piercing.jpg"
+            if "flash" in t or "convention" in t or "con" in t or "expo" in t:
+                return "img/story-flash.jpg"
+            return "img/homepage-hero.jpg"
+
         for i, (slug, title, category, excerpt, paras, sources, pub) in enumerate(STORIES):
-            if db.query(Story).filter_by(slug=slug).one_or_none():
+            existing = db.query(Story).filter_by(slug=slug).one_or_none()
+            if existing:
+                if existing.cover_image in ("img/ph-2.svg", "", None):
+                    existing.cover_image = _story_image(slug, title, category)
                 continue
             body = "".join(f"<p>{p}</p>" for p in paras)
             body += "".join(_attrib(n, u) for n, u in sources)
             db.add(Story(
                 issue_id=issue.id, title=title, slug=slug, category=category,
-                excerpt=excerpt, body=body, cover_image="img/ph-2.svg",
+                excerpt=excerpt, body=body,
+                cover_image=_story_image(slug, title, category),
                 author_name=AUTHOR, sort_order=i, is_published=True,
                 published_at=pub))
             added["stories"] += 1
