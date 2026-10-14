@@ -26,6 +26,9 @@ from flask import Flask, render_template, send_from_directory
 from .config import Config
 from .db import create_all, init_engine
 from . import models  # noqa: F401  (register all models on Base)
+# Models defined inside blueprint modules must be imported before
+# create_all() runs, or their tables are never created.
+from . import billing, community, market  # noqa: F401,E402
 
 
 def create_app(config_object=None) -> Flask:
