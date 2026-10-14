@@ -125,6 +125,11 @@ def migrate_schema() -> None:
                 conn.execute(text(
                     f"ALTER TABLE {table} ADD COLUMN {column} VARCHAR(2)"))
 
+        # Issue free/public flag — launch issue is the free teaser.
+        issue_cols = {c["name"] for c in inspect(engine).get_columns("issues")}
+        if "is_free" not in issue_cols:
+            conn.execute(text(
+                "ALTER TABLE issues ADD COLUMN is_free BOOLEAN NOT NULL DEFAULT 0"))
         # Podcast series topic tag (tattoo / piercing / both) — nullable;
         # the piercing seed backfills the curated series.
         existing = {c["name"] for c in inspect(engine).get_columns("podcast_series")}

@@ -481,7 +481,7 @@ def main() -> None:
 def _seed() -> None:
     added = {"issues": 0, "stories": 0, "series": 0, "episodes": 0}
     with session_scope() as db:
-        # --- Issue #2: the real-news issue --------------------------------
+        # --- Issue #2: the real-news issue --------------------------------------
         issue = db.query(Issue).filter_by(slug="issue-2-the-current-fall-2026").one_or_none()
         if issue is None:
             issue = Issue(
@@ -496,6 +496,10 @@ def _seed() -> None:
             added["issues"] += 1
         elif issue.cover_image in ("img/ph-1.svg", "", None):
             issue.cover_image = "img/issue-2-cover.jpg"
+        # Migrate old #1 numbering to #2 (launch issue is now #1)
+        if issue.number == 1 and issue.slug == "issue-1-the-current-fall-2026":
+            issue.number = 2
+            issue.slug = "issue-2-the-current-fall-2026"
 
         # --- Stories -------------------------------------------------------
         def _story_image(slug, title, category):

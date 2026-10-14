@@ -153,6 +153,7 @@ class Issue(Base):
     blurb: Mapped[str] = mapped_column(Text, default="", nullable=False)
     cover_image: Mapped[str] = mapped_column(String(500), default="", nullable=False)
     is_published: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    is_free: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
     published_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow,
                                                  nullable=False)

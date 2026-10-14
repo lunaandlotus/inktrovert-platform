@@ -75,6 +75,9 @@ def create_app(config_object=None) -> Flask:
                     # Curated real-world content (news, trends, real podcasts).
                     import seed_content as _content_module
                     _content_module._seed()
+                    # Issue #1: the launch issue (free/public teaser).
+                    import seed_issue1 as _issue1_module
+                    _issue1_module._seed()
                     # First real studio: Luna & Lotus Piercing & Ink (featured).
                     import seed_studio as _studio_module
                     _studio_module._seed()

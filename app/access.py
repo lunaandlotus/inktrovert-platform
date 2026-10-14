@@ -43,9 +43,15 @@ def has_active_magazine_subscription(user) -> bool:
 
 
 def can_view_issue(user, issue) -> bool:
-    """Full-magazine online viewing is subscriber-only (any issue)."""
+    """Full-magazine online viewing is subscriber-only, except free issues.
+
+    The launch issue (is_free=True) is public — it's the hook that pulls
+    readers in and converts them to subscribers for the rest.
+    """
     if issue is None or not issue.is_published:
         return False
+    if getattr(issue, "is_free", False):
+        return True
     return has_active_magazine_subscription(user)
 
 
