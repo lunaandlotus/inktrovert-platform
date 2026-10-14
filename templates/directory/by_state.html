@@ -1,21 +1,21 @@
 {% extends "base.html" %}
 
-{% block title %}News by state — Inktrovert{% endblock %}
+{% block title %}Artists &amp; Studios by State — {{ site_name }}{% endblock %}
 
 {% block content %}
-<h1>News by state</h1>
-<p class="muted">Pick a state for its studios, artists, news, and conventions.</p>
+<h1>Artists &amp; Studios by State</h1>
+<p class="muted">Find an artist or a studio in your state — each page also carries that state's news and conventions.</p>
 
 {% if states %}
 <div class="grid">
   {% for s in states %}
   <article class="card">
-    <h3><a href="{{ url_for('public.news_state', code=s.code) }}">{{ s.name }}</a></h3>
-    <p class="meta">{{ s.count }} {{ "story" if s.count == 1 else "stories" }}</p>
+    <h3><a href="{{ url_for('directory.state_hub', code=s.code) }}">{{ s.name }}</a></h3>
+    <p class="meta">{{ s.studios }} {{ "studio" if s.studios == 1 else "studios" }} · {{ s.artists }} {{ "artist" if s.artists == 1 else "artists" }}</p>
   </article>
   {% endfor %}
 </div>
 {% else %}
-<p class="empty">No state-tagged news yet — check back soon.</p>
+<p class="empty">No state listings yet — check back soon.</p>
 {% endif %}
 {% endblock %}

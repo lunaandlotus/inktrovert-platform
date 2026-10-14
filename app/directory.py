@@ -156,6 +156,10 @@ def profile_detail(slug):
 ARTIST_KINDS = ("tattoo_artist", "piercer", "independent_artist")
 
 
+def _category_label(category: str) -> str:
+    return (category or "").replace("-", " ").title()
+
+
 def _state_hub(db, code: str) -> dict | None:
     """Everything Inktrovert knows about one US state.
 
@@ -259,4 +263,5 @@ def state_hub(code: str):
     hub = _state_hub(db, code)
     if hub is None:
         abort(404)
-    return render_template("directory/state_hub.html", **hub)
+    return render_template("directory/state_hub.html",
+                           category_label=_category_label, **hub)

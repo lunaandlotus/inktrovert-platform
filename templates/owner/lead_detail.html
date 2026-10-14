@@ -13,6 +13,8 @@
   <dd>{{ lead.found_date.strftime("%B %d, %Y") if lead.found_date else "—" }}{% if lead.submitted_by %} · via {{ lead.submitted_by }}{% endif %}</dd>
   <dt>Suggested angle</dt>
   <dd>{{ lead.suggested_angle or "No angle suggested." }}</dd>
+  <dt>State</dt>
+  <dd>{{ lead.suggested_state_name or "Not tagged" }}{% if lead.suggested_state %} ({{ lead.suggested_state }}){% endif %} — carried onto the story on promote</dd>
   <dt>Notes</dt>
   <dd>{{ lead.notes or "—" }}</dd>
   {% if lead.promoted_story %}

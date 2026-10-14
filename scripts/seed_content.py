@@ -21,7 +21,8 @@ from datetime import datetime, timezone
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from app.db import session_scope  # noqa: E402
-from app.models import Issue, PodcastEpisode, PodcastSeries, Story, utcnow  # noqa: E402
+from app.models import (Issue, PodcastEpisode, PodcastSeries, Profile, Story,  # noqa: E402
+                        utcnow)
 
 
 def _dt(y: int, m: int, d: int):
@@ -534,6 +535,29 @@ def _seed() -> None:
                     related_story_id=None, related_profile_id=None,
                     is_published=True, published_at=released))
                 added["episodes"] += 1
+
+        # --- State tags: backfill US-state codes on seeded news stories ----
+        # (idempotent: only fills blanks; international + trend stories stay
+        # untagged and appear in the issue overview)
+        STATE_TAGS = {
+            "curated-golden-state-expo-2026-scaled-back": "CA",   # Pasadena
+            "curated-ink-different-bay-area-apprenticeship": "CA",  # Union City
+            "curated-flower-city-tattoo-convention-2026": "NY",   # Rochester
+        }
+        for slug, code in STATE_TAGS.items():
+            story = db.query(Story).filter_by(slug=slug).one_or_none()
+            if story is not None and not story.state:
+                story.state = code
+
+        # --- Featured studio for Wyoming: Luna & Lotus (Casper) -------------
+        # Defensive lookup — the studio seed may not have run yet.
+        luna = (
+            db.query(Profile)
+            .filter(Profile.display_name.ilike("%luna%lotus%"))
+            .first()
+        )
+        if luna is not None and not luna.featured_state:
+            luna.featured_state = "WY"
 
     print(f"Content seed done: {added['issues']} issues, {added['stories']} stories, "
           f"{added['series']} podcast series, {added['episodes']} episodes added.")

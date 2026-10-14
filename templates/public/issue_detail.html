@@ -45,7 +45,7 @@
 <section>
   <h2>News by state</h2>
   {% for section in state_sections %}
-  <h3><a href="{{ url_for('public.news_state', code=section.code) }}">{{ section.name }}</a></h3>
+  <h3><a href="{{ url_for('directory.state_hub', code=section.code) }}">{{ section.name }}</a></h3>
   {% for story in section.stories %}
   <article class="story-teaser">
     {% if story.cover_image %}<img src="{{ story.cover_image }}" alt="" class="teaser-cover">{% endif %}
@@ -58,7 +58,7 @@
   </article>
   {% endfor %}
   {% endfor %}
-  <p><a href="{{ url_for('public.news_states') }}">Browse news from every state &rarr;</a></p>
+  <p><a href="{{ url_for('directory.by_state') }}">Browse artists &amp; studios by state &rarr;</a></p>
 </section>
 {% endif %}
 
