@@ -59,6 +59,9 @@ def create_app(config_object=None) -> Flask:
                     sys.path.insert(0, os.path.join(root, "scripts"))
                     import seed as _seed_module
                     _seed_module._seed()
+                    # Curated real-world content (news, trends, real podcasts).
+                    import seed_content as _content_module
+                    _content_module._seed()
         finally:
             from .db import close_db
             close_db()

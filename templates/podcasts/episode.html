@@ -25,7 +25,7 @@
       Your browser doesn't support audio playback — check back soon.
     </audio>
   {% else %}
-    <p style="color: #fff; margin: 8px 0 0;">Audio coming soon.</p>
+    <p style="color: #fff; margin: 8px 0 0;">No audio file here — see the show notes below for where to listen.</p>
   {% endif %}
 </div>
 
@@ -33,7 +33,7 @@
   <h2>Show notes</h2>
   {% for paragraph in episode.description.split('\n\n') %}
     {% if paragraph.strip() %}
-      <p>{{ paragraph|trim }}</p>
+      <p>{{ paragraph|trim|urlize }}</p>
     {% endif %}
   {% endfor %}
 {% endif %}
