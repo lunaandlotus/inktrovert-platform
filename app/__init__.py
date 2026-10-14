@@ -39,6 +39,14 @@ def create_app(config_object=None) -> Flask:
     )
     app.config.from_object(config_object or Config)
 
+    # Ensure the SQLite directory exists. Git doesn't track empty dirs, so
+    # Render clones without instance/ and sqlite can't create the file.
+    _db_url = app.config["DATABASE_URL"]
+    if _db_url.startswith("sqlite:"):
+        _db_path = _db_url.split("sqlite:///", 1)[-1]
+        if os.path.dirname(_db_path):
+            os.makedirs(os.path.dirname(_db_path), exist_ok=True)
+
     init_engine(app.config["DATABASE_URL"])
     create_all()
     os.makedirs(app.config["UPLOAD_DIR"], exist_ok=True)
