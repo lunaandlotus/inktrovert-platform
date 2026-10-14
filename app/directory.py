@@ -11,7 +11,8 @@ from __future__ import annotations
 from flask import Blueprint, abort, render_template, request
 
 from .db import get_db
-from .models import PROFILE_KINDS, Profile, TeamAffiliation
+from .models import (PROFILE_KINDS, Event, Profile, Story, TeamAffiliation,
+                     US_STATES, normalize_state)
 
 directory_bp = Blueprint("directory", __name__, url_prefix="/directory")
 
@@ -99,7 +100,7 @@ def profile_detail(slug):
     if profile.kind == "studio":
         affs = (
             db.query(TeamAffiliation)
-            .filter_by(studio_profile_id=profile.id)
+            .filter_by(studio_profile_id=profile.id, status="accepted")
             .order_by(TeamAffiliation.sort_order, TeamAffiliation.id)
             .all()
         )
@@ -117,7 +118,7 @@ def profile_detail(slug):
 
     affs = (
         db.query(TeamAffiliation)
-        .filter_by(member_profile_id=profile.id)
+        .filter_by(member_profile_id=profile.id, status="accepted")
         .order_by(TeamAffiliation.sort_order, TeamAffiliation.id)
         .all()
     )
@@ -142,3 +143,120 @@ def profile_detail(slug):
         studios=studios,
         flash_labels=FLASH_LABELS,
     )
+
+
+# ---------------------------------------------------------------------------
+# Artists & Studios by State — state hubs.
+#
+# The browse page is a directory discovery tool ("Artists & Studios by
+# State"). Each state hub does double duty: the directory for that state
+# (featured studio, studios, artists) AND that state's news and conventions.
+# ---------------------------------------------------------------------------
+
+ARTIST_KINDS = ("tattoo_artist", "piercer", "independent_artist")
+
+
+def _state_hub(db, code: str) -> dict | None:
+    """Everything Inktrovert knows about one US state.
+
+    Returns None for an unknown code. Sections: featured studio (where one
+    is designated via Profile.featured_state), studios, artists, news,
+    conventions.
+    """
+    code = (code or "").upper()
+    if code not in US_STATES:
+        return None
+    featured = (
+        db.query(Profile)
+        .filter(Profile.is_listed.is_(True),
+                Profile.featured_state == code)
+        .order_by(Profile.display_name.asc())
+        .first()
+    )
+    studios = [
+        p for p in db.query(Profile)
+        .filter(Profile.is_listed.is_(True),
+                Profile.kind == "studio")
+        .order_by(Profile.display_name.asc())
+        .all()
+        if normalize_state(p.state) == code
+        and (featured is None or p.id != featured.id)
+    ]
+    artists = [
+        p for p in db.query(Profile)
+        .filter(Profile.is_listed.is_(True),
+                Profile.kind.in_(ARTIST_KINDS))
+        .order_by(Profile.display_name.asc())
+        .all()
+        if normalize_state(p.state) == code
+    ]
+    news = (
+        db.query(Story)
+        .filter(Story.is_published.is_(True),
+                Story.state == code)
+        .order_by(Story.published_at.desc(), Story.created_at.desc())
+        .all()
+    )
+    conventions = [
+        e for e in db.query(Event)
+        .filter(Event.status == "approved")
+        .order_by(Event.starts_at.asc())
+        .all()
+        if normalize_state(e.state) == code
+    ]
+    return {
+        "code": code,
+        "name": US_STATES[code],
+        "featured": featured,
+        "studios": studios,
+        "artists": artists,
+        "news": news,
+        "conventions": conventions,
+    }
+
+
+def _states_with_listings(db) -> list[dict]:
+    """States that have at least one listed studio or artist, with counts."""
+    counts: dict[str, dict] = {}
+    for p in db.query(Profile).filter(Profile.is_listed.is_(True)).all():
+        code = normalize_state(p.state)
+        if not code:
+            continue
+        entry = counts.setdefault(code, {"studios": 0, "artists": 0})
+        if p.kind == "studio":
+            entry["studios"] += 1
+        elif p.kind in ARTIST_KINDS:
+            entry["artists"] += 1
+    result = []
+    for code in sorted(counts, key=lambda c: US_STATES.get(c, c)):
+        entry = counts[code]
+        total = entry["studios"] + entry["artists"]
+        if total:
+            result.append({
+                "code": code,
+                "name": US_STATES.get(code, code),
+                "studios": entry["studios"],
+                "artists": entry["artists"],
+                "total": total,
+            })
+    return result
+
+
+@directory_bp.get("/by-state")
+def by_state():
+    """Browse: every state with Inktrovert studios/artists, and counts."""
+    db = get_db()
+    return render_template(
+        "directory/by_state.html",
+        states=_states_with_listings(db),
+    )
+
+
+@directory_bp.get("/by-state/<code>")
+def state_hub(code: str):
+    """One state's hub: featured studio, studios, artists, news, conventions."""
+    db = get_db()
+    hub = _state_hub(db, code)
+    if hub is None:
+        abort(404)
+    return render_template("directory/state_hub.html", **hub)

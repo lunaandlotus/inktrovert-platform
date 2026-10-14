@@ -44,6 +44,46 @@ VALID_ROLES = (
 PROFILE_KINDS = ("tattoo_artist", "piercer", "independent_artist", "studio", "brand")
 
 
+# ---------------------------------------------------------------------------
+# US states — state-by-state news coverage.
+# Stories carry a 2-letter code in `Story.state`; leads carry a suggested
+# code in `StoryLead.suggested_state`; a profile designated as a state's
+# featured studio carries the code in `Profile.featured_state`.
+# ---------------------------------------------------------------------------
+
+US_STATES = {
+    "AL": "Alabama", "AK": "Alaska", "AZ": "Arizona", "AR": "Arkansas",
+    "CA": "California", "CO": "Colorado", "CT": "Connecticut", "DE": "Delaware",
+    "FL": "Florida", "GA": "Georgia", "HI": "Hawaii", "ID": "Idaho",
+    "IL": "Illinois", "IN": "Indiana", "IA": "Iowa", "KS": "Kansas",
+    "KY": "Kentucky", "LA": "Louisiana", "ME": "Maine", "MD": "Maryland",
+    "MA": "Massachusetts", "MI": "Michigan", "MN": "Minnesota", "MS": "Mississippi",
+    "MO": "Missouri", "MT": "Montana", "NE": "Nebraska", "NV": "Nevada",
+    "NH": "New Hampshire", "NJ": "New Jersey", "NM": "New Mexico", "NY": "New York",
+    "NC": "North Carolina", "ND": "North Dakota", "OH": "Ohio", "OK": "Oklahoma",
+    "OR": "Oregon", "PA": "Pennsylvania", "RI": "Rhode Island", "SC": "South Carolina",
+    "SD": "South Dakota", "TN": "Tennessee", "TX": "Texas", "UT": "Utah",
+    "VT": "Vermont", "VA": "Virginia", "WA": "Washington", "WV": "West Virginia",
+    "WI": "Wisconsin", "WY": "Wyoming", "DC": "District of Columbia",
+}
+
+_NAME_TO_CODE = {name.casefold(): code for code, name in US_STATES.items()}
+
+
+def normalize_state(value: str | None) -> str | None:
+    """Turn anything state-like ("WY", "wy", "Wyoming") into a 2-letter code.
+
+    Returns None for blank or unrecognized input — international and
+    non-state content simply stays untagged.
+    """
+    if not value:
+        return None
+    text = value.strip()
+    if len(text) == 2 and text.upper() in US_STATES:
+        return text.upper()
+    return _NAME_TO_CODE.get(text.casefold())
+
+
 class Role(Base):
     __tablename__ = "roles"
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
@@ -138,8 +178,16 @@ class Story(Base):
     published_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow,
                                                  nullable=False)
+    # US state this story is about, as a 2-letter code (see US_STATES).
+    # Nullable: international stories, national trends, and older stories
+    # stay untagged and appear in the issue overview.
+    state: Mapped[str | None] = mapped_column(String(2), nullable=True, index=True)
 
     issue: Mapped[Issue | None] = relationship("Issue", back_populates="stories")
+
+    @property
+    def state_name(self) -> str | None:
+        return US_STATES.get(self.state) if self.state else None
 
 
 class Event(Base):
@@ -201,6 +249,14 @@ class StoryLead(Base):
                                                  nullable=False)
     suggested_angle: Mapped[str] = mapped_column(Text, default="", nullable=False)
     notes: Mapped[str] = mapped_column(Text, default="", nullable=False)
+    # US state the gathered item is about, as a 2-letter code (see US_STATES).
+    # Captured at ingest so the daily news gathering feeds state-tagged leads;
+    # carried onto the story when the lead is promoted.
+    suggested_state: Mapped[str | None] = mapped_column(String(2), nullable=True)
+
+    @property
+    def suggested_state_name(self) -> str | None:
+        return US_STATES.get(self.suggested_state) if self.suggested_state else None
     # new / reviewing / promoted / discarded
     status: Mapped[str] = mapped_column(String(20), default="new", nullable=False, index=True)
     promoted_story_id: Mapped[int | None] = mapped_column(
@@ -255,6 +311,11 @@ class Profile(Base):
                                                                       ondelete="SET NULL"),
                                                            nullable=True)
     is_listed: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+    # Featured promotion: homepage showcase, state-page features, etc.
+    is_featured: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    # Designated featured studio for a US state page, as a 2-letter code
+    # (see US_STATES). Shown at the top of that state's hub page.
+    featured_state: Mapped[str | None] = mapped_column(String(2), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow,
                                                  nullable=False)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow,
@@ -265,6 +326,9 @@ class Profile(Base):
         order_by="PortfolioCollection.sort_order")
     flash: Mapped[list["FlashPiece"]] = relationship(
         "FlashPiece", back_populates="profile", cascade="all, delete-orphan")
+    links: Mapped[list["ProfileLink"]] = relationship(
+        "ProfileLink", back_populates="profile", cascade="all, delete-orphan",
+        order_by="ProfileLink.sort_order, ProfileLink.id")
 
 
 class PortfolioCollection(Base):
@@ -312,8 +376,16 @@ class FlashPiece(Base):
     profile: Mapped[Profile] = relationship("Profile", back_populates="flash")
 
 
+AFFILIATION_STATUSES = ("pending", "accepted", "declined")
+
+
 class TeamAffiliation(Base):
-    """An artist profile affiliated with a studio profile."""
+    """An artist profile affiliated with a studio profile.
+
+    Invites start as "pending": the studio asks, the artist accepts or
+    declines. Only "accepted" rows show on public profiles. A declined or
+    cancelled invite leaves no public trace.
+    """
     __tablename__ = "team_affiliations"
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     studio_profile_id: Mapped[int] = mapped_column(ForeignKey("profiles.id", ondelete="CASCADE"),
@@ -322,9 +394,34 @@ class TeamAffiliation(Base):
                                                    nullable=False, index=True)
     role_label: Mapped[str] = mapped_column(String(100), default="", nullable=False)
     sort_order: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+    # pending / accepted / declined
+    status: Mapped[str] = mapped_column(String(20), default="pending", nullable=False)
+    invited_by_user_id: Mapped[int | None] = mapped_column(ForeignKey("users.id",
+                                                                      ondelete="SET NULL"),
+                                                           nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow,
+                                                 nullable=False)
+    decided_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
     __table_args__ = (UniqueConstraint("studio_profile_id", "member_profile_id",
                                        name="uq_team_affiliation"),)
+
+
+class ProfileLink(Base):
+    """A labelled link on an artist/studio/brand profile — Instagram,
+    Facebook, TikTok, website, shop, booking page, whatever they want to
+    share. Owners add and remove them any time."""
+    __tablename__ = "profile_links"
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    profile_id: Mapped[int] = mapped_column(ForeignKey("profiles.id", ondelete="CASCADE"),
+                                            nullable=False, index=True)
+    label: Mapped[str] = mapped_column(String(100), nullable=False)
+    url: Mapped[str] = mapped_column(String(500), nullable=False)
+    sort_order: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow,
+                                                 nullable=False)
+
+    profile: Mapped[Profile] = relationship("Profile", back_populates="links")
 
 
 class ClaimRequest(Base):

@@ -39,6 +39,61 @@
   {% endif %}
 </div>
 
+{% if managed %}
+<div class="card">
+  <h3>Listings you manage</h3>
+  <ul class="claim-list">
+    {% for p in managed %}
+      <li>
+        <a href="{{ url_for('directory.profile_detail', slug=p.slug) }}">{{ p.display_name }}</a>
+        <a class="btn btn-sm" href="{{ url_for('manage.dashboard', slug=p.slug) }}">Manage</a>
+      </li>
+    {% endfor %}
+  </ul>
+</div>
+{% endif %}
+
+{% if pending_invites %}
+<div class="card">
+  <h3>Studio roster invitations</h3>
+  <p class="muted">Studios want you on their roster. Accept to be listed, decline to pass.</p>
+  <ul class="claim-list">
+    {% for aff, studio, member in pending_invites %}
+      <li>
+        <strong>{{ studio.display_name }}</strong> invites <strong>{{ member.display_name }}</strong>
+        {% if aff.role_label %}<span class="muted">· {{ aff.role_label }}</span>{% endif %}
+        <form method="post" action="{{ url_for('manage.roster_accept', aff_id=aff.id) }}" style="display:inline">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button class="btn btn-gold btn-sm" type="submit">Accept</button>
+        </form>
+        <form method="post" action="{{ url_for('manage.roster_decline', aff_id=aff.id) }}" style="display:inline">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button class="btn btn-sm" type="submit">Decline</button>
+        </form>
+      </li>
+    {% endfor %}
+  </ul>
+</div>
+{% endif %}
+
+{% if memberships %}
+<div class="card">
+  <h3>Your studio rosters</h3>
+  <ul class="claim-list">
+    {% for aff, studio, member in memberships %}
+      <li>
+        <a href="{{ url_for('directory.profile_detail', slug=studio.slug) }}">{{ studio.display_name }}</a>
+        <span class="muted">· {{ member.display_name }}{% if aff.role_label %} · {{ aff.role_label }}{% endif %}</span>
+        <form method="post" action="{{ url_for('manage.roster_leave', aff_id=aff.id) }}" style="display:inline" onsubmit="return confirm('Leave this studio roster?');">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button class="btn btn-sm" type="submit">Leave</button>
+        </form>
+      </li>
+    {% endfor %}
+  </ul>
+</div>
+{% endif %}
+
 <div class="card">
   <h3>Membership</h3>
   <p>Paid memberships aren't open yet — you're on the free Reader plan.</p>

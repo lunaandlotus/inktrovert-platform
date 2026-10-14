@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block title %}News by state — Inktrovert{% endblock %}
+
+{% block content %}
+<h1>News by state</h1>
+<p class="muted">Pick a state for its studios, artists, news, and conventions.</p>
+
+{% if states %}
+<div class="grid">
+  {% for s in states %}
+  <article class="card">
+    <h3><a href="{{ url_for('public.news_state', code=s.code) }}">{{ s.name }}</a></h3>
+    <p class="meta">{{ s.count }} {{ "story" if s.count == 1 else "stories" }}</p>
+  </article>
+  {% endfor %}
+</div>
+{% else %}
+<p class="empty">No state-tagged news yet — check back soon.</p>
+{% endif %}
+{% endblock %}

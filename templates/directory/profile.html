@@ -129,6 +129,17 @@
   </p>
 </section>
 
+{% if profile.links %}
+<section>
+  <h2>Links</h2>
+  <ul class="spec-list">
+    {% for link in profile.links %}
+    <li><a href="{{ link.url }}" target="_blank" rel="noopener">{{ link.label }}</a></li>
+    {% endfor %}
+  </ul>
+</section>
+{% endif %}
+
 {% if profile.policies %}
 <section>
   <h2>Policies</h2>

@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+
+{% block title %}{{ name }} — Inktrovert{% endblock %}
+
+{% block content %}
+<p><a href="{{ url_for('public.news_states') }}">&larr; News by state</a></p>
+<h1>{{ name }}</h1>
+<p class="muted">Studios, artists, news, and conventions from {{ name }}.</p>
+
+{% if featured %}
+<section class="featured-studio">
+  <span class="badge badge-gold">Featured studio</span>
+  <h2><a href="{{ url_for('directory.profile_detail', slug=featured.slug) }}">{{ featured.display_name }}</a></h2>
+  {% if featured.city %}<p class="meta">{{ featured.city }}, {{ name }}{% if featured.verified %} · <span class="badge badge-verified">Verified</span>{% endif %}</p>{% endif %}
+  {% if featured.bio %}<p>{{ featured.bio[:280] }}{% if featured.bio|length > 280 %}…{% endif %}</p>{% endif %}
+</section>
+{% endif %}
+
+{% if studios %}
+<section>
+  <h2>Studios in {{ name }}</h2>
+  <div class="grid">
+    {% for p in studios %}
+    <article class="card">
+      <h3><a href="{{ url_for('directory.profile_detail', slug=p.slug) }}">{{ p.display_name }}</a>
+        {% if p.verified %}<span class="badge badge-verified">Verified</span>{% endif %}</h3>
+      {% if p.city %}<p class="meta">{{ p.city }}</p>{% endif %}
+    </article>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+
+{% if artists %}
+<section>
+  <h2>Artists in {{ name }}</h2>
+  <div class="grid">
+    {% for p in artists %}
+    <article class="card">
+      <h3><a href="{{ url_for('directory.profile_detail', slug=p.slug) }}">{{ p.display_name }}</a>
+        {% if p.verified %}<span class="badge badge-verified">Verified</span>{% endif %}</h3>
+      <p class="meta">{{ p.kind|replace('_', ' ')|title }}{% if p.city %} · {{ p.city }}{% endif %}</p>
+    </article>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+
+{% if news %}
+<section>
+  <h2>News from {{ name }}</h2>
+  {% for story in news %}
+  <article class="story-teaser">
+    {% if story.cover_image %}<img src="{{ story.cover_image }}" alt="" class="teaser-cover">{% endif %}
+    <div>
+      <span class="badge">{{ category_label(story.category) }}</span>
+      <h3><a href="{{ url_for('public.story_detail', slug=story.slug) }}">{{ story.title }}</a></h3>
+      {% if story.excerpt %}<p>{{ story.excerpt }}</p>{% endif %}
+      <p class="meta">{{ story.author_name }}{% if story.published_at %} · {{ story.published_at.strftime('%b %d, %Y') }}{% endif %}</p>
+    </div>
+  </article>
+  {% endfor %}
+</section>
+{% endif %}
+
+{% if conventions %}
+<section>
+  <h2>Conventions in {{ name }}</h2>
+  <div class="grid">
+    {% for e in conventions %}
+    <article class="card">
+      <h3><a href="{{ url_for('public.event_detail', slug=e.slug) }}">{{ e.title }}</a></h3>
+      <p class="meta">{% if e.city %}{{ e.city }}{% endif %}{% if e.starts_at %} · {{ e.starts_at.strftime('%b %d, %Y') }}{% endif %}</p>
+    </article>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+
+{% if not featured and not studios and not artists and not news and not conventions %}
+<p class="empty">Nothing from {{ name }} yet — check back soon.</p>
+{% endif %}
+{% endblock %}

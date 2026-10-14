@@ -23,10 +23,11 @@
   </p>
 </header>
 
-{% if stories %}
+{% if overview_stories %}
 <section>
-  <h2>In this issue</h2>
-  {% for story in stories %}
+  <h2>The overview</h2>
+  <p class="muted">The big stories, trends, and what's happening across the industry.</p>
+  {% for story in overview_stories %}
   <article class="story-teaser">
     {% if story.cover_image %}<img src="{{ story.cover_image }}" alt="" class="teaser-cover">{% endif %}
     <div>
@@ -38,7 +39,30 @@
   </article>
   {% endfor %}
 </section>
-{% else %}
+{% endif %}
+
+{% if state_sections %}
+<section>
+  <h2>News by state</h2>
+  {% for section in state_sections %}
+  <h3><a href="{{ url_for('public.news_state', code=section.code) }}">{{ section.name }}</a></h3>
+  {% for story in section.stories %}
+  <article class="story-teaser">
+    {% if story.cover_image %}<img src="{{ story.cover_image }}" alt="" class="teaser-cover">{% endif %}
+    <div>
+      <span class="badge">{{ story.category.replace('-', ' ')|title }}</span>
+      <h3><a href="{{ url_for('public.story_detail', slug=story.slug) }}">{{ story.title }}</a></h3>
+      {% if story.excerpt %}<p>{{ story.excerpt }}</p>{% endif %}
+      <p class="meta">{{ story.author_name }}{% if story.published_at %} · {{ story.published_at.strftime('%b %d, %Y') }}{% endif %}</p>
+    </div>
+  </article>
+  {% endfor %}
+  {% endfor %}
+  <p><a href="{{ url_for('public.news_states') }}">Browse news from every state &rarr;</a></p>
+</section>
+{% endif %}
+
+{% if not overview_stories and not state_sections %}
 <p class="empty">Articles for this issue are still being set in type.</p>
 {% endif %}
 {% endblock %}

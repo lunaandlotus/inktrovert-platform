@@ -23,7 +23,8 @@ from .access import (archive_teaser_context, can_print_issue, can_view_history,
 from .auth import get_current_user, require_csrf
 from .db import get_db
 from .models import (STORY_CATEGORIES, Event, Issue, NewsletterEdition, PodcastEpisode,
-                     PodcastSeries, Profile, Story, utcnow)
+                     PodcastSeries, Profile, Story, US_STATES, normalize_state,
+                     utcnow)
 
 public_bp = Blueprint("public", __name__)
 
@@ -109,7 +110,8 @@ def home():
     )
     featured_profiles = (
         db.query(Profile).filter(Profile.is_listed == True,  # noqa: E712
-                                 Profile.verified == True)  # noqa: E712
+                                 Profile.verified == True,  # noqa: E712
+                                 Profile.is_featured == True)  # noqa: E712
         .order_by(Profile.updated_at.desc()).limit(3).all()
     )
     series_list = db.query(PodcastSeries).filter_by(is_active=True).all()
@@ -169,9 +171,25 @@ def issue_detail(slug):
         .filter_by(issue_id=issue.id, is_published=True)
         .order_by(Story.sort_order.asc(), Story.published_at.desc()).all()
     )
+    # The issue's news opens with a national overview, then breaks down by
+    # state. Stories without a state tag (international, national trends)
+    # form the overview; state-tagged stories group under their state.
+    overview = [s for s in stories if not s.state]
+    by_state: list[dict] = []
+    seen: dict[str, list] = {}
+    for s in stories:
+        if s.state:
+            seen.setdefault(s.state, []).append(s)
+    for code in sorted(seen, key=lambda c: US_STATES.get(c, c)):
+        by_state.append({
+            "code": code,
+            "name": US_STATES.get(code, code),
+            "stories": seen[code],
+        })
     upcoming = _upcoming_events(db)
     return render_template(
         "public/issue_detail.html", issue=issue, stories=stories,
+        overview_stories=overview, state_sections=by_state,
         upcoming_events=upcoming,
     )
 
@@ -406,7 +424,14 @@ def _score(needle: str, *fields_with_weight):
     return score
 
 
-def _magazine_search(db, q: str) -> list[dict]:
+def _magazine_search(db, q: str, state: str | None = None) -> list[dict]:
+    """Score-based magazine search.
+
+    When `state` (a 2-letter code) is given, results narrow to that state:
+    state-tagged stories, state-matched events, and issues/episodes drop out
+    (they carry no state tag). An empty query with a state returns everything
+    tagged for the state.
+    """
     needle = q.lower()
     found = []
     stories = (
@@ -414,16 +439,38 @@ def _magazine_search(db, q: str) -> list[dict]:
         .filter(Story.is_published == True)  # noqa: E712
         .all()
     )
+    if state:
+        stories = [s for s in stories if (s.state or "").upper() == state]
     for s in stories:
-        score = _score(needle, (3, s.title), (2, s.excerpt), (1, s.category),
-                       (1, s.body))
+        if needle:
+            score = _score(needle, (3, s.title), (2, s.excerpt), (1, s.category),
+                           (1, s.body))
+        else:
+            score = 1
         if score:
             found.append({
                 "kind": "story", "title": s.title, "blurb": s.excerpt,
                 "score": score, "date": _naive(s.published_at) or _naive(s.created_at),
                 "url": url_for("public.story_detail", slug=s.slug),
                 "label": _category_label(s.category),
+                "state": s.state,
+                "state_name": s.state_name,
             })
+    if state:
+        # Issues and episodes carry no state tag; only state-matched events
+        # join the results under an active state filter.
+        for e in db.query(Event).filter_by(status="approved").all():
+            if normalize_state(e.state) == state and (not needle or _score(
+                    needle, (3, e.title), (2, e.description), (1, e.city),
+                    (1, e.venue_name))):
+                found.append({
+                    "kind": "event", "title": e.title, "blurb": e.description,
+                    "score": 1, "date": _naive(e.starts_at),
+                    "url": url_for("public.event_detail", slug=e.slug),
+                    "label": "Event",
+                })
+        found.sort(key=lambda r: r["date"] or datetime(1970, 1, 1), reverse=True)
+        return found
     for i in db.query(Issue).filter_by(is_published=True).all():
         score = _score(needle, (3, f"Issue {i.number} {i.title}"), (3, i.title),
                        (2, i.blurb))
@@ -472,10 +519,20 @@ def _magazine_search(db, q: str) -> list[dict]:
     return found
 
 
-def _profile_search(db, q: str) -> list:
+def _profile_search(db, q: str, state: str | None = None) -> list:
+    """Directory search, optionally narrowed to a 2-letter state code.
+
+    Profile.state is free text ("Wyoming", "WY"), so it is normalized
+    before comparing.
+    """
     needle = q.lower()
     matches = []
     for p in db.query(Profile).filter(Profile.is_listed == True).all():  # noqa: E712
+        if state and normalize_state(p.state) != state:
+            continue
+        if not needle:
+            matches.append(p)
+            continue
         specialties = " ".join(str(s) for s in (p.specialties or [])).lower()
         if (needle in (p.display_name or "").lower()
                 or needle in (p.city or "").lower()
@@ -490,18 +547,21 @@ def search():
     scope = request.args.get("scope", "all").strip().lower()
     if scope not in SEARCH_SCOPES:
         scope = "all"
+    state = normalize_state(request.args.get("state", ""))
     results = []
     profiles = []
-    if q:
+    if q or state:
         db = get_db()
         if scope in ("all", "magazine"):
-            results = _magazine_search(db, q)
+            results = _magazine_search(db, q, state=state)
         if scope in ("all", "directory"):
-            profiles = _profile_search(db, q)
+            profiles = _profile_search(db, q, state=state)
     return render_template(
         "public/search.html",
         q=q,
         scope=scope,
+        state=state,
+        us_states=US_STATES,
         results=results,
         profiles=profiles,
         category_label=_category_label,

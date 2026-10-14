@@ -49,6 +49,8 @@ def create_app(config_object=None) -> Flask:
 
     init_engine(app.config["DATABASE_URL"])
     create_all()
+    from .db import migrate_schema
+    migrate_schema()
     os.makedirs(app.config["UPLOAD_DIR"], exist_ok=True)
 
     from .auth import csrf_token, ensure_roles, get_current_user, init_auth
@@ -70,6 +72,9 @@ def create_app(config_object=None) -> Flask:
                     # Curated real-world content (news, trends, real podcasts).
                     import seed_content as _content_module
                     _content_module._seed()
+                    # First real studio: Luna & Lotus Piercing & Ink (featured).
+                    import seed_studio as _studio_module
+                    _studio_module._seed()
         finally:
             from .db import close_db
             close_db()
@@ -81,6 +86,7 @@ def create_app(config_object=None) -> Flask:
     from .directory import directory_bp
     from .claims import claims_bp
     from .account import account_bp
+    from .manage import manage_bp
     from .owner import owner_bp
     from .support import support_bp
 
@@ -89,6 +95,7 @@ def create_app(config_object=None) -> Flask:
     app.register_blueprint(directory_bp)
     app.register_blueprint(claims_bp)
     app.register_blueprint(account_bp)
+    app.register_blueprint(manage_bp)
     app.register_blueprint(owner_bp)
     app.register_blueprint(support_bp)
 

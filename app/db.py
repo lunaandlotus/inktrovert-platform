@@ -77,3 +77,50 @@ def session_scope() -> Iterator[Session]:
 
 def create_all() -> None:
     Base.metadata.create_all(get_engine())
+
+
+def migrate_schema() -> None:
+    """Bring older databases up to date.
+
+    create_all() creates missing tables but never alters existing ones, so
+    columns added after a table's first creation need explicit migration.
+    Currently handles:
+      * team_affiliations gaining status / invited_by_user_id / created_at /
+        decided_at (roster invites). Pre-existing rows were all effectively
+        accepted, so they are stamped accepted.
+      * stories gaining state, story_leads gaining suggested_state, and
+        profiles gaining featured_state (state-by-state news). All nullable;
+        existing rows stay untagged.
+    New tables (profile_links) are handled by create_all().
+    """
+    from sqlalchemy import inspect, text
+
+    engine = get_engine()
+    with engine.begin() as conn:
+        cols = {c["name"] for c in inspect(engine).get_columns("team_affiliations")}
+        wanted = {
+            "status": "ALTER TABLE team_affiliations ADD COLUMN status VARCHAR(20) "
+                      "NOT NULL DEFAULT 'pending'",
+            "invited_by_user_id": "ALTER TABLE team_affiliations ADD COLUMN "
+                                  "invited_by_user_id INTEGER",
+            "created_at": "ALTER TABLE team_affiliations ADD COLUMN created_at DATETIME",
+            "decided_at": "ALTER TABLE team_affiliations ADD COLUMN decided_at DATETIME",
+        }
+        missing = [name for name in wanted if name not in cols]
+        for name in missing:
+            conn.execute(text(wanted[name]))
+        if "status" in missing:
+            # Rows that predate the invite flow were shown publicly, i.e.
+            # accepted. (Fresh rows default to pending via the model.)
+            conn.execute(text(
+                "UPDATE team_affiliations SET status = 'accepted' "
+                "WHERE status = 'pending'"))
+
+        # State-by-state news columns — all nullable, existing rows unaffected.
+        for table, column in (("stories", "state"),
+                             ("story_leads", "suggested_state"),
+                             ("profiles", "featured_state")):
+            existing = {c["name"] for c in inspect(engine).get_columns(table)}
+            if column not in existing:
+                conn.execute(text(
+                    f"ALTER TABLE {table} ADD COLUMN {column} VARCHAR(2)"))

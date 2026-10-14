@@ -159,7 +159,8 @@ def _seed() -> None:
         db.add(brand)
         db.flush()
         db.add(TeamAffiliation(studio_profile_id=studio.id,
-                               member_profile_id=maya.id, role_label="Resident artist"))
+                               member_profile_id=maya.id, role_label="Resident artist",
+                               status="accepted"))
 
         db.add(ClaimRequest(profile_id=maya.id, user_id=artist.id,
                             claimer_relationship="artist",

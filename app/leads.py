@@ -25,7 +25,7 @@ from urllib.parse import parse_qsl, urlencode, urlparse, urlunparse
 
 from sqlalchemy.orm import Session
 
-from .models import LEAD_STATUSES, Story, StoryLead, utcnow
+from .models import LEAD_STATUSES, Story, StoryLead, normalize_state, utcnow
 
 # Query params that identify the click, not the page — safe to drop.
 _TRACKING_PARAMS = {
@@ -85,8 +85,13 @@ def find_duplicate(db: Session, headline: str,
 
 def ingest_lead(db: Session, *, headline: str, source_url: str,
                 source_name: str = "", suggested_angle: str = "",
+                suggested_state: str | None = None,
                 submitted_by: str = "daily-gather-job") -> tuple[StoryLead | None, str | None]:
-    """Insert one lead. Returns (lead, None), or (existing, skip_reason)."""
+    """Insert one lead. Returns (lead, None), or (existing, skip_reason).
+
+    suggested_state accepts a 2-letter code or full state name; it is
+    normalized, and anything unrecognized stays untagged (None).
+    """
     headline = (headline or "").strip()
     source_url = (source_url or "").strip()
     if not headline or not source_url:
@@ -100,6 +105,7 @@ def ingest_lead(db: Session, *, headline: str, source_url: str,
         source_url=source_url,
         url_hash=url_hash_for(source_url),
         suggested_angle=(suggested_angle or "").strip(),
+        suggested_state=normalize_state(suggested_state),
         submitted_by=submitted_by,
         status="new",
     )
@@ -113,7 +119,7 @@ def ingest_leads(db: Session, items: list[dict],
     """Bulk ingest for the scheduled job.
 
     items: list of dicts with headline, source_url, and optional
-    source_name / suggested_angle. Returns
+    source_name / suggested_angle / suggested_state. Returns
     {"created": [ids], "skipped": [{"headline":..., "reason":...}]}.
     """
     created: list[int] = []
@@ -125,6 +131,7 @@ def ingest_leads(db: Session, items: list[dict],
             source_url=item.get("source_url", ""),
             source_name=item.get("source_name", ""),
             suggested_angle=item.get("suggested_angle", ""),
+            suggested_state=item.get("suggested_state"),
             submitted_by=submitted_by,
         )
         if reason is None:
@@ -179,6 +186,7 @@ def promote_lead(db: Session, lead: StoryLead, *, category: str = "news",
         body=f"Source: {lead.source_name} — {lead.source_url}\n\n",
         author_name=author_name,
         is_published=False,
+        state=lead.suggested_state,
     )
     db.add(story)
     db.flush()

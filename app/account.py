@@ -19,7 +19,8 @@ from .auth import (create_login_session, get_current_user, login_required,
                    require_csrf, set_login_cookie, clear_login_cookie,
                    verify_password)
 from .db import get_db
-from .models import ClaimRequest, User, UserSubscription, VALID_ROLES
+from .models import (ClaimRequest, Profile, TeamAffiliation, User,
+                     UserSubscription, VALID_ROLES)
 
 account_bp = Blueprint("account", __name__, url_prefix="/account")
 
@@ -153,6 +154,37 @@ def profile():
                      .filter_by(user_id=user.id)
                      .order_by(UserSubscription.id.desc()).all())
 
+    # Listings this user manages (claimed by them) — entry to /manage/<slug>.
+    managed = (db.query(Profile)
+               .filter_by(claimed_by_user_id=user.id, is_listed=True)
+               .order_by(Profile.display_name.asc()).all())
+
+    # Roster invites + memberships for the artist profiles this user owns.
+    my_profile_ids = [p.id for p in managed]
+    pending_invites: list[TeamAffiliation] = []
+    memberships: list[TeamAffiliation] = []
+    if my_profile_ids:
+        rows = (db.query(TeamAffiliation)
+                .filter(TeamAffiliation.member_profile_id.in_(my_profile_ids),
+                        TeamAffiliation.status.in_(("pending", "accepted")))
+                .order_by(TeamAffiliation.created_at.desc()).all())
+        by_id = {p.id: p for p in
+                 db.query(Profile).filter(Profile.id.in_(
+                     [a.studio_profile_id for a in rows]
+                     + [a.member_profile_id for a in rows])).all()}
+        for a in rows:
+            studio = by_id.get(a.studio_profile_id)
+            member = by_id.get(a.member_profile_id)
+            if studio is None or member is None:
+                continue
+            if a.status == "pending":
+                pending_invites.append((a, studio, member))
+            else:
+                memberships.append((a, studio, member))
+
     return render_template("account/profile.html",
                            claims=claims,
-                           subscriptions=subscriptions)
+                           subscriptions=subscriptions,
+                           managed=managed,
+                           pending_invites=pending_invites,
+                           memberships=memberships)

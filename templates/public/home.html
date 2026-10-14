@@ -70,10 +70,27 @@
 {% endif %}
 
 {% if featured_profiles %}
-<section>
-  <h2>Verified pros</h2>
-  <div class="grid">
-    {% for profile in featured_profiles %}
+<section class="studio-feature">
+  <p class="section-kicker">Featured studio</p>
+  {% set studio = featured_profiles[0] %}
+  <div class="studio-feature-block">
+    <div class="studio-feature-cover">
+      <span class="studio-feature-ribbon">First on Inktrovert</span>
+    </div>
+    <div class="studio-feature-copy">
+      <h2>{% if directory_enabled %}<a href="{{ url_for('directory.profile_detail', slug=studio.slug) }}">{{ studio.display_name }}</a>{% else %}{{ studio.display_name }}{% endif %}
+        {% if studio.verified %}<span class="badge badge-verified">Verified</span>{% endif %}</h2>
+      <p class="meta">{{ studio.kind|replace('_', ' ')|title }}{% if studio.city %} · {{ studio.city }}{% if studio.state %}, {{ studio.state }}{% endif %}{% endif %}</p>
+      {% if studio.bio %}<p class="excerpt">{{ studio.bio|truncate(240) }}</p>{% endif %}
+      <p>
+        {% if directory_enabled %}<a class="btn btn-dark" href="{{ url_for('directory.profile_detail', slug=studio.slug) }}">View profile</a>{% endif %}
+        {% if studio.booking_url %}<a class="btn btn-gold" href="{{ studio.booking_url }}">Book</a>{% endif %}
+      </p>
+    </div>
+  </div>
+  {% if featured_profiles|length > 1 %}
+  <div class="grid" style="margin-top:18px">
+    {% for profile in featured_profiles[1:] %}
     <article class="card">
       <h3>{% if directory_enabled %}<a href="{{ url_for('directory.profile_detail', slug=profile.slug) }}">{{ profile.display_name }}</a>{% else %}{{ profile.display_name }}{% endif %}
         {% if profile.verified %}<span class="badge badge-verified">Verified</span>{% endif %}</h3>
@@ -81,6 +98,7 @@
     </article>
     {% endfor %}
   </div>
+  {% endif %}
   {% if directory_browse_enabled %}<p><a class="btn" href="{{ url_for('directory.browse') }}">Find artists &amp; shops</a></p>{% endif %}
 </section>
 {% endif %}
