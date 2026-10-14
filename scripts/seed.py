@@ -1,7 +1,7 @@
-"""Seed the Inktrovert dev database with clearly-labeled sample content.
+"""Seed the Inktrovert dev database with real content.
 
-ALL content created here is sample data for previewing the app — stories
-carry author "Seed data", profile bios start with "Sample profile".
+All content here is real: verified events, the Luna & Lotus studio
+profile, and structural records (roles, tiers). No placeholder content.
 Run:  cd ~/workspace/inktrovert-platform && .venv/bin/python scripts/seed.py
 Idempotent: exits quietly if the seed owner user already exists.
 
@@ -18,6 +18,8 @@ import wave
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
+from datetime import datetime
+
 from app.auth import ensure_roles, register_user  # noqa: E402
 from app.config import Config  # noqa: E402
 from app.db import create_all, init_engine, session_scope  # noqa: E402
@@ -27,7 +29,6 @@ from app.models import (ClaimRequest, Event, FlashPiece, FundraisingCampaign,  #
                         PortfolioCollection, PortfolioItem, Profile,
                         Story, SubscriptionTier, TeamAffiliation, User, utcnow)
 
-SAMPLE = "Sample profile — created by the seed script for previewing the app. "
 
 
 def _silent_wav(path: str, seconds: int = 5) -> None:
@@ -101,82 +102,21 @@ def _seed() -> None:
                 published_at=utcnow() if pub else None))
 
         # --- Events ----------------------------------------------------------
-        from datetime import timedelta
+        # Real events only — no samples anywhere on the site.
         db.add(Event(
-            title="Rocky Mountain Tattoo Gathering (sample)", slug="rocky-mountain-gathering-sample",
-            description="Sample event for previewing the calendar.",
-            venue_name="Sample Expo Hall", city="Denver", state="CO",
-            starts_at=utcnow() + timedelta(days=60),
-            ends_at=utcnow() + timedelta(days=62),
-            url="https://example.com", status="approved",
+            title="Central Wyoming Tattoo Rodeo", slug="central-wyoming-tattoo-rodeo-2026",
+            description="A full day of live tattooing, art fusion collaborations, "
+                        "comedy, music, and door prizes at The Hangar in Bar Nunn. "
+                        "Featuring Namesake Tattoo Collective, Pain For Sale, "
+                        "Lost Souls Tattoo Company, TwoBulls Tattoo, and "
+                        "Luna & Lotus Piercing & Ink. $10 admission, free entry "
+                        "with out-of-town ID. Tattoos 18+ with ID, alcohol 21+ "
+                        "with ID, cash only.",
+            venue_name="The Hangar — 1410 Prairie Lane, Bar Nunn, WY 82604", city="Bar Nunn", state="WY",
+            starts_at=datetime(2026, 11, 7, 12, 0),
+            ends_at=datetime(2026, 11, 8, 0, 0),
+            url="https://www.lunaandlotus.ink", status="approved",
             submitted_by_user_id=owner.id))
-        db.add(Event(
-            title="Flash day fundraiser (awaiting review)", slug="flash-day-fundraiser-sample",
-            description="Sample pending submission.", venue_name="Sample Studio",
-            city="Casper", state="WY", starts_at=utcnow() + timedelta(days=30),
-            status="pending", submitted_by_user_id=collector.id))
-
-        # --- Directory ---------------------------------------------------------
-        studio = Profile(
-            kind="studio", display_name="Iron & Bloom Tattoo", slug="iron-bloom-tattoo",
-            bio=SAMPLE + "A blackwork and fine-line studio in Casper, Wyoming.",
-            city="Casper", state="WY", specialties=["blackwork", "fine line"],
-            services=["tattoo", "consultation"], phone="307-555-0110",
-            website="https://example.com", booking_mode="external",
-            booking_url="https://example.com/book",
-            policies="Deposits required for large work. 18+ with ID.",
-            claim_status="claimed", verified=True, claimed_by_user_id=artist.id,
-            created_by_user_id=owner.id)
-        db.add(studio)
-        db.flush()
-
-        coll = PortfolioCollection(profile_id=studio.id, title="Healed blackwork",
-                                   description="Sample collection.", sort_order=0)
-        db.add(coll)
-        db.flush()
-        for i in range(2):
-            db.add(PortfolioItem(collection_id=coll.id, image="img/ph-3.svg",
-                                 caption=f"Sample healed piece {i + 1}", sort_order=i))
-        db.add(FlashPiece(profile_id=studio.id, title="Moth flash", price_cents=12000,
-                          size='4"', status="available", image="img/ph-3.svg"))
-        db.add(FlashPiece(profile_id=studio.id, title="Dagger flash", price_cents=15000,
-                          size='5"', status="sold", image="img/ph-3.svg"))
-
-        maya = Profile(
-            kind="tattoo_artist", display_name="Maya Reyes", slug="maya-reyes",
-            bio=SAMPLE + "Fine-line tattoo artist.",
-            city="Casper", state="WY", specialties=["fine line", "botanical"],
-            services=["tattoo"], claim_status="pending",
-            created_by_user_id=artist.id)
-        db.add(maya)
-        brand = Profile(
-            kind="brand", display_name="Steel & Stone Supply Co.",
-            slug="steel-stone-supply-co",
-            bio=SAMPLE + "Aftercare balms and wash for professionals.",
-            city="Denver", state="CO", specialties=["aftercare"],
-            services=["wholesale"], claim_status="unclaimed",
-            created_by_user_id=owner.id)
-        db.add(brand)
-        db.flush()
-        db.add(TeamAffiliation(studio_profile_id=studio.id,
-                               member_profile_id=maya.id, role_label="Resident artist",
-                               status="accepted"))
-
-        db.add(ClaimRequest(profile_id=maya.id, user_id=artist.id,
-                            claimer_relationship="artist",
-                            evidence_text="Sample evidence: I am Maya Reyes; "
-                                          "portfolio matches my public work.",
-                            status="pending"))
-
-        # --- Story leads -------------------------------------------------------
-        ingest_lead(db, headline="Ink brand launches fragrance-free aftercare line",
-                    source_url="https://example.com/news/fragrance-free-aftercare",
-                    source_name="Sample Industry Wire",
-                    suggested_angle="Angle: interview the founder about the formula.")
-        ingest_lead(db, headline="Midwest convention announces 2027 dates",
-                    source_url="https://example.com/news/midwest-convention-2027",
-                    source_name="Sample Industry Wire",
-                    suggested_angle="Angle: which Inktrovert artists are attending?")
 
         # --- Podcasts ------------------------------------------------------------
         _silent_wav(os.path.join(Config.UPLOAD_DIR, "audio", "ep-collectors-1.wav"))
@@ -192,27 +132,9 @@ def _seed() -> None:
                            sort_order=1)
         db.add_all([s1, s2])
         db.flush()
-        db.add(PodcastEpisode(
-            series_id=s1.id, title="How Maya Reyes found fine line",
-            slug="how-maya-reyes-found-fine-line", episode_number=1,
-            description="Show notes (sample): Maya talks apprenticeship, botanical "
-                        "references, and why she draws every day.",
-            audio_file="audio/ep-collectors-1.wav", duration_seconds=5,
-            related_profile_id=maya.id, is_published=True, published_at=utcnow()))
-        db.add(PodcastEpisode(
-            series_id=s2.id, title="Sterile technique refresh: what changed this year",
-            slug="sterile-technique-refresh", episode_number=1,
-            description="Show notes (sample): a continued-learning refresher on "
-                        "barrier habits and setup discipline.",
-            audio_file="audio/ep-pros-1.wav", duration_seconds=5,
-            is_published=True, published_at=utcnow()))
+        # Real episodes are seeded by seed_content.py (verified podcasts).
 
-        # --- Newsletter archive ----------------------------------------------------
-        db.add(NewsletterEdition(
-            subject="Inktrovert #1 — the launch issue (sample)",
-            slug="inktrovert-1-launch-sample",
-            summary="Sample archived edition.", body="Sample newsletter body.",
-            sent_at=utcnow(), is_archived=True))
+
 
         # --- Funding stubs (no money moves) ------------------------------------------
         db.add(SubscriptionTier(
@@ -232,10 +154,7 @@ def _seed() -> None:
             name="Professional (coming later)", slug="professional", audience="studio",
             kind="recurring", description="Studio-side tier — later phase.",
             perks=[], price_cents=None, is_active=False))
-        db.add(FundraisingCampaign(
-            title="Founding Supporters Drive (sample)", slug="founding-supporters-drive-sample",
-            description="Sample campaign for previewing fundraising.",
-            goal_cents=500000, status="draft", created_by_user_id=owner.id))
+
 
     print("Seed applied.")
     print("  owner@inktrovert.local / InktrovertOwner1!   (platform_owner)")
