@@ -64,6 +64,7 @@ def _seed() -> None:
         artist = register_user("artist@inktrovert.local", "InktrovertPro1!",
                                "Maya Reyes", roles=["tattoo_artist", "collector"])
 
+
         # --- Events ----------------------------------------------------------
         # Real events only — no samples anywhere on the site.
         db.add(Event(

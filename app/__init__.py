@@ -93,6 +93,22 @@ def create_app(config_object=None) -> Flask:
                         _piercing_module = None
                     if _piercing_module is not None:
                         _piercing_module._seed()
+            # Angie's owner grant: runs on every boot (not just fresh seeds).
+            # She registers herself at /account/register with
+            # angie@lunaandlotus.ink; this grants platform_owner idempotently.
+            try:
+                from .db import get_db
+                from .models import Role, User
+                _db = get_db()
+                _angie = _db.query(User).filter_by(email="angie@lunaandlotus.ink").one_or_none()
+                if _angie is not None:
+                    _owner_role = _db.query(Role).filter_by(name="platform_owner").one_or_none()
+                    if _owner_role is not None and _owner_role not in _angie.roles:
+                        _angie.roles.append(_owner_role)
+                        _db.commit()
+                        print("Granted platform_owner to angie@lunaandlotus.ink")
+            except Exception as e:
+                print(f"Owner grant skipped: {e}")
         finally:
             from .db import close_db
             close_db()
